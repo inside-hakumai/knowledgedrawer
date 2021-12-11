@@ -1,0 +1,41 @@
+$windowWidth: 600px;
+$windowHeight: 100px;
+
+body {
+  margin: 0;
+}
+
+#root {
+  //width: 784px;
+  //height: 84px;
+  width: $windowWidth;
+  height: $windowHeight;
+}
+
+
+.layer {
+  width: 100%;
+  height: 100%;
+  transform: scale(0.94);
+  transform-origin: 50% 50%;
+  overflow: hidden;
+
+  background-color: #00bcd4cf;
+  border-radius: 6px;
+
+  .formContainer {
+    padding: 8px;
+    width: 584px;
+    height: 84px;
+
+    .queryForm {
+      color: #efefef;
+      width: 100%;
+      height: 100%;
+      font-size: 40px;
+      background: none;
+      border: none;
+      outline: none;
+    }
+  }
+}

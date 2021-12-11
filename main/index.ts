@@ -1,7 +1,7 @@
 import electron from 'electron'
 import path from 'path'
 
-const { BrowserWindow, app } = electron
+const { BrowserWindow, app, screen } = electron
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -14,7 +14,19 @@ if (isDevelopment) {
 }
 
 app.whenReady().then(async () => {
-  const mainWindow = new BrowserWindow({ width: 800, height: 1500 })
+  const primaryDisplay = screen.getPrimaryDisplay()
+  const { width, height } = primaryDisplay.workAreaSize
+
+  const mainWindow = new BrowserWindow({
+    width: 600,
+    height: 100,
+    resizable: false,
+    transparent: true,
+    frame: false,
+    maximizable: false,
+  })
+
+  mainWindow.setPosition(Math.floor((width - 600) / 2), 200)
 
   mainWindow.webContents.openDevTools({ mode: 'detach' })
   await mainWindow.loadFile('dist/index.html')

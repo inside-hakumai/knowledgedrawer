@@ -1,7 +1,9 @@
 const App: React.VFC = () => {
   return (
-    <div>
-      <h1>Hello World</h1>
+    <div className='layer'>
+      <div className='formContainer'>
+        <input className='queryForm' type='text' />
+      </div>
     </div>
   )
 }
