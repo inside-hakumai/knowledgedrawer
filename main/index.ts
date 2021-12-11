@@ -1,5 +1,5 @@
-import electron from 'electron';
-import path from "path";
+import electron from 'electron'
+import path from 'path'
 
 const { BrowserWindow, app } = electron
 
@@ -16,6 +16,6 @@ if (isDevelopment) {
 app.whenReady().then(async () => {
   const mainWindow = new BrowserWindow({ width: 800, height: 1500 })
 
-  mainWindow.webContents.openDevTools({mode: 'detach'})
+  mainWindow.webContents.openDevTools({ mode: 'detach' })
   await mainWindow.loadFile('dist/index.html')
 })

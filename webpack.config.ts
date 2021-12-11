@@ -1,11 +1,11 @@
-import { Configuration } from 'webpack';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { Configuration } from 'webpack'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
 
 const NODE_ENV: 'development' | 'production' = (() => {
   if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production') {
-    return process.env.NODE_ENV;
+    return process.env.NODE_ENV
   } else {
-    return 'development';
+    return 'development'
   }
 })()
 
@@ -19,9 +19,9 @@ const config: Configuration = {
       {
         test: /\.tsx?$/,
         exclude: /node_modules/,
-        use: 'ts-loader'
-      }
-    ]
+        use: 'ts-loader',
+      },
+    ],
   },
 
   plugins: [
@@ -31,11 +31,11 @@ const config: Configuration = {
       scriptLoading: 'blocking',
       inject: 'body',
       minify: false,
-    })
+    }),
   ],
 
   resolve: {
-    extensions: ['.js', '.ts', '.tsx']
+    extensions: ['.js', '.ts', '.tsx'],
   },
   devtool: 'inline-source-map',
 }
