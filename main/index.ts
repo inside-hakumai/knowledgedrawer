@@ -18,8 +18,8 @@ app.whenReady().then(async () => {
   const { width, height } = primaryDisplay.workAreaSize
 
   const mainWindow = new BrowserWindow({
-    width: 600,
-    height: 100,
+    width: 800,
+    height: 800,
     resizable: false,
     transparent: true,
     frame: false,
@@ -28,6 +28,9 @@ app.whenReady().then(async () => {
 
   mainWindow.setPosition(Math.floor((width - 600) / 2), 200)
 
-  mainWindow.webContents.openDevTools({ mode: 'detach' })
+  if (isDevelopment) {
+    mainWindow.webContents.openDevTools({ mode: 'detach' })
+  }
+
   await mainWindow.loadFile('dist/index.html')
 })
