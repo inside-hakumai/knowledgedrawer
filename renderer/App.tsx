@@ -3,14 +3,6 @@ import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark-dimmed.css'
 import MarkdownIt from 'markdown-it'
 
-const sampleContents = `
-\`WHERE （カラム名） = null\` は機能しない。 \`IS NULL\` を使う。
-
-\`\`\`sql
-SELECT * FROM <テーブル名> WHERE <カラム名> IS NULL;
-\`\`\`
-`
-
 const md: MarkdownIt = new MarkdownIt({
   highlight: (str, lang) => {
     if (lang && hljs.getLanguage(lang)) {
@@ -29,7 +21,7 @@ const md: MarkdownIt = new MarkdownIt({
 
 const App: React.VFC = () => {
   const [isDirty, setIsDirty] = useState(false)
-  const [suggestItems, setSuggestItems] = useState<string[]>([])
+  const [suggestItems, setSuggestItems] = useState<{ title: string; contents: string }[]>([])
   const [selectedItem, setSelectedItem] = useState<number | null>(null)
   const formRef = useRef<HTMLInputElement>(null)
 
@@ -61,7 +53,7 @@ const App: React.VFC = () => {
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    console.log(event.key)
+    console.debug(`Key: ${event.key}`)
     if (selectedItem === null) {
       return
     }
@@ -116,7 +108,7 @@ const App: React.VFC = () => {
                     key={`suggest-${index}`}
                     className={`suggestList-item ${selectedItem === index ? 'selected' : ''}`}
                   >
-                    {item}
+                    {item.title}
                   </li>
                 ))}
               </ul>
@@ -124,7 +116,13 @@ const App: React.VFC = () => {
 
             <div className='contentsContainer'>
               <div className='contents'>
-                <div dangerouslySetInnerHTML={{ __html: md.render(sampleContents) }} />
+                {selectedItem !== null && (
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: md.render(suggestItems[selectedItem].contents),
+                    }}
+                  />
+                )}
               </div>
             </div>
           </div>
