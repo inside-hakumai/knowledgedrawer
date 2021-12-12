@@ -1,8 +1,31 @@
 import { useEffect, useRef, useState } from 'react'
-import SyntaxHighlighter from 'react-syntax-highlighter'
-import darcula from 'react-syntax-highlighter/dist/esm/styles/hljs/darcula'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github-dark-dimmed.css'
+import MarkdownIt from 'markdown-it'
 
-const sampleCode = 'SELECT * FROM <テーブル名> WHERE <カラム名> IS NULL;'
+const sampleContents = `
+\`WHERE （カラム名） = null\` は機能しない。 \`IS NULL\` を使う。
+
+\`\`\`sql
+SELECT * FROM <テーブル名> WHERE <カラム名> IS NULL;
+\`\`\`
+`
+
+const md: MarkdownIt = new MarkdownIt({
+  highlight: (str, lang) => {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return (
+          '<pre><code class="hljs">' +
+          hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+          '</code></pre>'
+        )
+      } catch (__) {}
+    }
+
+    return '<pre><code class="hljs">' + md.utils.escapeHtml(str) + '</code></pre>'
+  },
+})
 
 const App: React.VFC = () => {
   const [isDirty, setIsDirty] = useState(false)
@@ -96,10 +119,7 @@ const App: React.VFC = () => {
 
             <div className='contentsContainer'>
               <div className='contents'>
-                <p>WHERE （カラム名） = null は機能しない。 IS NULL を使う。</p>
-                <SyntaxHighlighter language='sql' style={darcula}>
-                  {sampleCode}
-                </SyntaxHighlighter>
+                <div dangerouslySetInnerHTML={{ __html: md.render(sampleContents) }} />
               </div>
             </div>
           </div>
