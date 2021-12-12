@@ -61,6 +61,7 @@ const App: React.VFC = () => {
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    console.log(event.key)
     if (selectedItem === null) {
       return
     }
@@ -96,7 +97,11 @@ const App: React.VFC = () => {
   }, [suggestItems])
 
   return (
-    <div className={`renderingArea ${isDirty ? 'isDirty' : ''}`} onKeyDown={handleKeyDown}>
+    <div
+      className={`renderingArea ${isDirty ? 'isDirty' : ''}`}
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
+    >
       <div className='wrapper'>
         <div className='formContainer'>
           <input className='queryForm' type='text' onChange={onFormChange} ref={formRef} />
