@@ -8,12 +8,15 @@ const App: React.VFC = () => {
   const [isDirty, setIsDirty] = useState(false)
   const [suggestItems, setSuggestItems] = useState<string[]>([])
   const [selectedItem, setSelectedItem] = useState<number | null>(null)
+  const formRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     // @ts-ignore
     window.api.onReceiveSuggest((result) => {
       setSuggestItems(result)
     })
+
+    formRef.current?.focus()
   }, [])
 
   const onFormChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,19 +38,30 @@ const App: React.VFC = () => {
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      if (
-        selectedItem === null ||
-        (event.key === 'ArrowDown' && selectedItem === suggestItems.length - 1) ||
-        (event.key === 'ArrowUp' && selectedItem === 0)
-      ) {
-        return
-      }
-
-      const nextIndex = selectedItem + (event.key === 'ArrowDown' ? 1 : -1)
-      setSelectedItem(nextIndex)
-      console.debug('Selected item:', nextIndex)
+    if (selectedItem === null) {
+      return
     }
+
+    let triggeredAction: 'up' | 'down'
+
+    if (event.key === 'ArrowUp' || (event.ctrlKey && event.key === 'p')) {
+      triggeredAction = 'up'
+    } else if (event.key === 'ArrowDown' || (event.ctrlKey && event.key === 'n')) {
+      triggeredAction = 'down'
+    } else {
+      return
+    }
+
+    if (
+      (triggeredAction === 'down' && selectedItem === suggestItems.length - 1) ||
+      (triggeredAction === 'up' && selectedItem === 0)
+    ) {
+      return
+    }
+
+    const nextIndex = selectedItem + (triggeredAction === 'down' ? 1 : -1)
+    setSelectedItem(nextIndex)
+    console.debug('Selected item:', nextIndex)
   }
 
   useEffect(() => {
@@ -62,7 +76,7 @@ const App: React.VFC = () => {
     <div className={`renderingArea ${isDirty ? 'isDirty' : ''}`} onKeyDown={handleKeyDown}>
       <div className='wrapper'>
         <div className='formContainer'>
-          <input className='queryForm' type='text' onChange={onFormChange} />
+          <input className='queryForm' type='text' onChange={onFormChange} ref={formRef} />
         </div>
 
         {isDirty && (
