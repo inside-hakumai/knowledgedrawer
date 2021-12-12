@@ -41,19 +41,32 @@ body {
       border: none;
       outline: none;
     }
+
+    &.isDirty {
+      border-bottom: 1px solid #0092a5;
+    }
   }
 
   .result {
     display: flex;
 
     .suggestContainer {
-      padding: 8px;
       flex: 1;
       color: #f7f7f7;
+      border-right: 1px solid #0092a5;
 
       .suggestList {
+        margin: 0;
         padding: 0;
         list-style-type: none;
+
+        &-item {
+          padding: 8px;
+
+          &.selected {
+            background: #00000040;
+          }
+        }
       }
     }
 
