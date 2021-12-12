@@ -6,23 +6,17 @@ body {
   margin: 0;
 }
 
-#root {
-  //width: 784px;
-  //height: 84px;
-  width: $windowWidth;
-  height: $expandedWindowHeight;
-}
-
 
 .renderingArea {
   width: 100%;
-  height: 100%;
+  height: $defaultWindowHeight;
   transform: scale(0.94);
-  transform-origin: 50% 50%;
+  transform-origin: 50% 0;
   overflow: hidden;
 
   .wrapper {
     width: 100%;
+    height: 100%;
     background-color: #0092a5cf;
     border-radius: 6px;
   }
@@ -41,14 +35,11 @@ body {
       border: none;
       outline: none;
     }
-
-    &.isDirty {
-      border-bottom: 1px solid #0092a5;
-    }
   }
 
   .result {
     display: flex;
+    height: 100%;
 
     .suggestContainer {
       flex: 1;
@@ -77,5 +68,12 @@ body {
     }
   }
 
+  &.isDirty {
+    height: $expandedWindowHeight;
+
+    .formContainer {
+      border-bottom: 1px solid #0092a5;
+    }
+  }
 
 }

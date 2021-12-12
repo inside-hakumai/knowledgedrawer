@@ -2,15 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import SyntaxHighlighter from 'react-syntax-highlighter'
 import darcula from 'react-syntax-highlighter/dist/esm/styles/hljs/darcula'
 
-const sampleSuggestItems = [
-  'SpringBoot @Transactional',
-  'SpringBoot Mybatisのテスト',
-  'SpringBoot Thymeleafのテスト',
-  'WHERE句でnullを指定する',
-  'hoge',
-  'huga',
-]
-
 const sampleCode = 'SELECT * FROM <テーブル名> WHERE <カラム名> IS NULL;'
 
 const App: React.VFC = () => {
@@ -18,18 +9,26 @@ const App: React.VFC = () => {
   const [suggestItems, setSuggestItems] = useState<string[]>([])
   const [selectedItem, setSelectedItem] = useState<number | null>(null)
 
-  const onFormChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    // @ts-ignore
+    window.api.onReceiveSuggest((result) => {
+      setSuggestItems(result)
+    })
+  }, [])
+
+  const onFormChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsDirty(true)
     if (event.target.value.length === 0) {
       clearResult()
     } else {
-      // TODO: ここに検索処理を書く
-
-      setSuggestItems(sampleSuggestItems)
+      // @ts-ignore
+      window.api.search(event.target.value)
     }
   }
 
   const clearResult = () => {
+    // @ts-ignore
+    window.api.clearSearch()
     setIsDirty(false)
     setSuggestItems([])
     setSelectedItem(null)
@@ -60,9 +59,9 @@ const App: React.VFC = () => {
   }, [suggestItems])
 
   return (
-    <div className='renderingArea' onKeyDown={handleKeyDown}>
+    <div className={`renderingArea ${isDirty ? 'isDirty' : ''}`} onKeyDown={handleKeyDown}>
       <div className='wrapper'>
-        <div className={`formContainer ${isDirty ? 'isDirty' : ''}`}>
+        <div className='formContainer'>
           <input className='queryForm' type='text' onChange={onFormChange} />
         </div>
 
@@ -70,7 +69,7 @@ const App: React.VFC = () => {
           <div className='result'>
             <div className='suggestContainer'>
               <ul className='suggestList'>
-                {sampleSuggestItems.map((item, index) => (
+                {suggestItems.map((item, index) => (
                   <li
                     key={`suggest-${index}`}
                     className={`suggestList-item ${selectedItem === index ? 'selected' : ''}`}
