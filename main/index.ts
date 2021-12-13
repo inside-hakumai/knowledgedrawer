@@ -4,7 +4,7 @@ import * as fs from 'fs/promises'
 import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
 
-const { BrowserWindow, app, screen, ipcMain } = electron
+const { BrowserWindow, app, screen, ipcMain, Tray, Menu } = electron
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -17,10 +17,24 @@ if (isDevelopment) {
 }
 
 let mainWindow: Electron.BrowserWindow
+let tray: electron.Tray | null = null
 let suggestItems: { title: string; contents: string }[] = []
 
 app.whenReady().then(async () => {
   await prepareUserData()
+
+  // 本番環境かつMacOSでの起動時、Dockにアイコンを表示させない
+  if (process.env.NODE_ENV === 'production' && process.platform === 'darwin') {
+    app.dock.hide()
+  }
+
+  // 通知領域に表示させるアイコンの設定
+  tray = new Tray(path.join(__dirname, '../assets/icon.png'))
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Toggle Knowledgebase', click: showWindow },
+    { label: 'Quit', role: 'quit' },
+  ])
+  tray.setContextMenu(contextMenu)
 
   const primaryDisplay = screen.getPrimaryDisplay()
   const { width, height } = primaryDisplay.workAreaSize
@@ -47,6 +61,10 @@ app.whenReady().then(async () => {
 
   await mainWindow.loadFile('dist/index.html')
 })
+
+const showWindow = () => {
+  mainWindow.show()
+}
 
 ipcMain.handle('requestSearch', (event, query: string) => {
   console.debug(`Search request: ${query}`)
