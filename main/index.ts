@@ -4,7 +4,7 @@ import * as fs from 'fs/promises'
 import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
 
-const { BrowserWindow, app, screen, ipcMain, Tray, Menu } = electron
+const { BrowserWindow, app, screen, ipcMain, Tray, Menu, globalShortcut } = electron
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -31,7 +31,7 @@ app.whenReady().then(async () => {
   // 通知領域に表示させるアイコンの設定
   tray = new Tray(path.join(__dirname, '../assets/icon.png'))
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Toggle Knowledgebase', click: showWindow },
+    { label: 'Toggle Knowledgebase', click: toggleWindow },
     { label: 'Quit', role: 'quit' },
   ])
   tray.setContextMenu(contextMenu)
@@ -56,18 +56,41 @@ app.whenReady().then(async () => {
   mainWindow.setPosition(Math.floor((width - 600) / 2), 200)
 
   if (isDevelopment) {
-    mainWindow.webContents.openDevTools({ mode: 'detach' })
+    mainWindow.webContents.openDevTools({ mode: 'detach', activate: false })
   }
 
+  globalShortcut.register('Alt+Command+Space', () => {
+    toggleWindow()
+  })
+
   await mainWindow.loadFile('dist/index.html')
+
+  app.on('browser-window-blur', () => {
+    if (mainWindow.isVisible()) {
+      hideWindow()
+    }
+  })
 })
+
+const toggleWindow = () => {
+  if (mainWindow.isVisible()) {
+    hideWindow()
+  } else {
+    showWindow()
+  }
+}
+
+const hideWindow = () => {
+  mainWindow.hide()
+  mainWindow.webContents.send('doneDeactivate')
+}
 
 const showWindow = () => {
   mainWindow.show()
 }
 
 ipcMain.handle('requestSearch', (event, query: string) => {
-  console.debug(`Search request: ${query}`)
+  console.debug(`RECEIVE MESSAGE: requestSearch, QUERY: ${query}`)
 
   // ここに検索処理を書く
 
@@ -77,7 +100,13 @@ ipcMain.handle('requestSearch', (event, query: string) => {
 })
 
 ipcMain.handle('clearSearch', (event) => {
+  console.debug('RECEIVE MESSAGE: clearSearch')
   mainWindow.setSize(800, 94)
+})
+
+ipcMain.handle('requestDeactivate', () => {
+  console.debug('RECEIVE MESSAGE: requestDeactivate')
+  hideWindow()
 })
 
 const prepareUserData = async () => {

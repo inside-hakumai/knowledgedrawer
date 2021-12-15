@@ -31,6 +31,14 @@ const App: React.VFC = () => {
       setSuggestItems(result)
     })
 
+    // @ts-ignore
+    window.api.onDoneDeactivate(() => {
+      setIsDirty(false)
+      setSuggestItems([])
+      setSelectedItem(null)
+      formRef.current!.value = ''
+    })
+
     formRef.current?.focus()
   }, [])
 
@@ -52,8 +60,14 @@ const App: React.VFC = () => {
     setSelectedItem(null)
   }
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = async (event: React.KeyboardEvent<HTMLDivElement>) => {
     console.debug(`Key: ${event.key}`)
+
+    if (event.key === 'Escape') {
+      await requestDeactivate()
+      return
+    }
+
     if (selectedItem === null) {
       return
     }
@@ -78,6 +92,11 @@ const App: React.VFC = () => {
     const nextIndex = selectedItem + (triggeredAction === 'down' ? 1 : -1)
     setSelectedItem(nextIndex)
     console.debug('Selected item:', nextIndex)
+  }
+
+  const requestDeactivate = () => {
+    // @ts-ignore
+    window.api.requestDeactivate()
   }
 
   useEffect(() => {
