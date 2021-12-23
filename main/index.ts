@@ -62,6 +62,11 @@ app.whenReady().then(async () => {
     },
   })
 
+  // レンダラプロセスにおけるネットワーク疎通を無効化する
+  mainWindow.webContents.session.enableNetworkEmulation({
+    offline: true,
+  })
+
   mainWindow.setPosition(Math.floor((width - 600) / 2), 200)
 
   if (isDevelopment) {
