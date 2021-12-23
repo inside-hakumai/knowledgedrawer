@@ -14,6 +14,9 @@ const config: Configuration = {
   mode: NODE_ENV,
   target: 'web',
   entry: './renderer/index.tsx',
+  output: {
+    path: __dirname + '/build',
+  },
 
   module: {
     rules: [

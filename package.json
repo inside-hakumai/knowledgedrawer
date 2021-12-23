@@ -2,16 +2,20 @@
   "name": "knowledgebase",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/index.js",
+  "main": "build/index.js",
   "scripts": {
-    "predev": "rimraf dist",
+    "predev": "rimraf build",
     "dev": "run-p dev:*",
-    "dev:start": "wait-on ./dist/index.html && cross-env NODE_ENV=\"development\" electron .",
+    "dev:start": "wait-on ./build/index.html && cross-env NODE_ENV=\"development\" electron .",
     "dev:compile": "tsc -w -p tsconfig.main.json",
     "dev:webpack": "webpack --watch --progress",
+    "build:dev": "tsc -p tsconfig.main.json && webpack --progress",
+    "build:prod": "tsc -p tsconfig.main.json && cross-env NODE_ENV=\"production\" webpack --progress",
     "format": "prettier --write '**/*.{js,ts,jsx,tsx}'",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "predist": "rimraf dist",
+    "dist": "npm run build:prod && electron-builder"
   },
   "author": "",
   "license": "ISC",
@@ -21,7 +25,7 @@
     "@types/node": "^16.11.12",
     "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.11",
-    "electron": "^16.0.4",
+    "electron-log": "^4.4.3",
     "highlight.js": "^11.3.1",
     "markdown-it": "^12.3.0",
     "marked": "^4.0.7",
@@ -34,6 +38,8 @@
     "@types/mini-css-extract-plugin": "^2.4.0",
     "cross-env": "^7.0.3",
     "css-loader": "^6.5.1",
+    "electron": "^16.0.4",
+    "electron-builder": "^22.14.5",
     "electron-reload": "^2.0.0-alpha.1",
     "html-webpack-plugin": "^5.5.0",
     "husky": "^7.0.4",
@@ -52,5 +58,15 @@
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": "prettier --write"
+  },
+  "build": {
+    "appId": "dev.insidehakumai.knowledgebase",
+    "productName": "Knowledgebase",
+    "files": [
+      "build/**/*"
+    ],
+    "extraResources": [
+      "assets/**/*"
+    ]
   }
 }

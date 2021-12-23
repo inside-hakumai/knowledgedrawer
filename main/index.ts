@@ -3,10 +3,14 @@ import path from 'path'
 import * as fs from 'fs/promises'
 import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
+import log from 'electron-log'
 
 const { BrowserWindow, app, screen, ipcMain, Tray, Menu, globalShortcut } = electron
 
-const isDevelopment = process.env.NODE_ENV === 'development'
+const isDevelopment = !app.isPackaged
+
+// 通知領域に表示させるアイコンの画像のパス
+let treyIconPath: string
 
 if (isDevelopment) {
   require('electron-reload')(__dirname, {
@@ -14,6 +18,11 @@ if (isDevelopment) {
     forceHardReset: true,
     hardResetMethod: 'exit',
   })
+
+  treyIconPath = path.join(__dirname, '..', 'assets', 'icon.png')
+} else {
+  Object.assign(console, log.functions)
+  treyIconPath = path.join(process.resourcesPath, 'assets', 'icon.png')
 }
 
 let mainWindow: Electron.BrowserWindow
@@ -24,12 +33,12 @@ app.whenReady().then(async () => {
   await prepareUserData()
 
   // 本番環境かつMacOSでの起動時、Dockにアイコンを表示させない
-  if (process.env.NODE_ENV === 'production' && process.platform === 'darwin') {
+  if (app.isPackaged && process.platform === 'darwin') {
     app.dock.hide()
   }
 
   // 通知領域に表示させるアイコンの設定
-  tray = new Tray(path.join(__dirname, '../assets/icon.png'))
+  tray = new Tray(treyIconPath)
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Toggle Knowledgebase', click: toggleWindow },
     { label: 'Quit', role: 'quit' },
@@ -63,13 +72,18 @@ app.whenReady().then(async () => {
     toggleWindow()
   })
 
-  await mainWindow.loadFile('dist/index.html')
+  await mainWindow.loadFile('build/index.html')
 
   app.on('browser-window-blur', () => {
     if (mainWindow.isVisible()) {
       hideWindow()
     }
   })
+})
+
+process.on('uncaughtException', (error) => {
+  log.error(error)
+  app.quit()
 })
 
 const toggleWindow = () => {
