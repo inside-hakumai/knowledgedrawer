@@ -12,6 +12,9 @@ const isDevelopment = !app.isPackaged
 // 通知領域に表示させるアイコンの画像のパス
 let treyIconPath: string
 
+// ウィンドウを非表示にする挙動を無効にするかどうか（開発時に使用）
+let isDisabledDeactivation = isDevelopment && process.env.DISABLE_DEACTIVATION === 'true'
+
 if (isDevelopment) {
   require('electron-reload')(__dirname, {
     electron: path.join(__dirname, '../node_modules', '.bin', 'electron'),
@@ -100,8 +103,12 @@ const toggleWindow = () => {
 }
 
 const hideWindow = () => {
-  mainWindow.hide()
-  mainWindow.webContents.send('doneDeactivate')
+  if (isDisabledDeactivation) {
+    console.debug('Hiding window is requested but ignored because DISABLE_DEACTIVATION is "true"')
+  } else {
+    mainWindow.hide()
+    mainWindow.webContents.send('doneDeactivate')
+  }
 }
 
 const showWindow = () => {

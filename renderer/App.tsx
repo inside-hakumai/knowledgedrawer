@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark-dimmed.css'
 import MarkdownIt from 'markdown-it'
@@ -23,7 +23,12 @@ const App: React.VFC = () => {
   const [isDirty, setIsDirty] = useState(false)
   const [suggestItems, setSuggestItems] = useState<{ title: string; contents: string }[]>([])
   const [selectedItem, setSelectedItem] = useState<number | null>(null)
+  const [controllableArea, setControllableArea] = useState<'searchResult' | 'article' | null>(null)
+  const [selectedCodeItem, setSelectedCodeItem] = useState<number | null>(null)
+  const [articleCodeList, setArticleCodeList] = useState<NodeListOf<Element> | null>(null)
+
   const formRef = useRef<HTMLInputElement>(null)
+  const articleDivRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // @ts-ignore
@@ -64,12 +69,28 @@ const App: React.VFC = () => {
     console.debug(`Key: ${event.key}`)
 
     if (event.key === 'Escape') {
-      await requestDeactivate()
+      if (controllableArea === 'article') {
+        setControllableArea('searchResult')
+        setSelectedCodeItem(null)
+        articleCodeList?.forEach((code) => {
+          code.classList.remove('selected')
+        })
+      } else if (controllableArea === 'searchResult') {
+        await requestDeactivate()
+      }
       return
     }
 
     if (selectedItem === null) {
       return
+    }
+
+    if (event.key === 'Enter') {
+      if (articleCodeList !== null && articleCodeList.length > 0) {
+        setSelectedCodeItem(0)
+        articleCodeList[0].classList.add('selected')
+        setControllableArea('article')
+      }
     }
 
     let triggeredAction: 'up' | 'down'
@@ -82,16 +103,36 @@ const App: React.VFC = () => {
       return
     }
 
-    if (
-      (triggeredAction === 'down' && selectedItem === suggestItems.length - 1) ||
-      (triggeredAction === 'up' && selectedItem === 0)
-    ) {
-      return
-    }
+    if (controllableArea === 'article' && articleCodeList !== null && selectedCodeItem != null) {
+      if (
+        (triggeredAction === 'down' && selectedCodeItem === articleCodeList.length - 1) ||
+        (triggeredAction === 'up' && selectedCodeItem === 0)
+      ) {
+        return
+      }
 
-    const nextIndex = selectedItem + (triggeredAction === 'down' ? 1 : -1)
-    setSelectedItem(nextIndex)
-    console.debug('Selected item:', nextIndex)
+      const nextIndex = selectedCodeItem + (triggeredAction === 'down' ? 1 : -1)
+      setSelectedCodeItem(nextIndex)
+      articleCodeList.forEach((code, index) => {
+        if (index === nextIndex) {
+          code.classList.add('selected')
+        } else {
+          code.classList.remove('selected')
+        }
+      })
+      console.debug('Selected codeItem:', nextIndex)
+    } else {
+      if (
+        (triggeredAction === 'down' && selectedItem === suggestItems.length - 1) ||
+        (triggeredAction === 'up' && selectedItem === 0)
+      ) {
+        return
+      }
+
+      const nextIndex = selectedItem + (triggeredAction === 'down' ? 1 : -1)
+      setSelectedItem(nextIndex)
+      console.debug('Selected item:', nextIndex)
+    }
   }
 
   const requestDeactivate = () => {
@@ -102,10 +143,18 @@ const App: React.VFC = () => {
   useEffect(() => {
     if (selectedItem === null && suggestItems.length > 0) {
       setSelectedItem(0)
+      setControllableArea('searchResult')
     } else if (suggestItems.length === 0) {
       setSelectedItem(null)
+      setControllableArea(null)
     }
   }, [suggestItems])
+
+  useLayoutEffect(() => {
+    if (selectedItem !== null) {
+      setArticleCodeList(articleDivRef.current!.querySelectorAll('code.hljs'))
+    }
+  }, [selectedItem])
 
   return (
     <div
@@ -137,6 +186,7 @@ const App: React.VFC = () => {
               <div className='contents'>
                 {selectedItem !== null && (
                   <div
+                    ref={articleDivRef}
                     dangerouslySetInnerHTML={{
                       __html: md.render(suggestItems[selectedItem].contents),
                     }}
