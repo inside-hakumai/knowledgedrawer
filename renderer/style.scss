@@ -64,6 +64,7 @@ body {
     }
 
     .contentsContainer {
+      position: relative;
       padding: 8px;
       flex: 1;
       color: #f7f7f7;
@@ -91,6 +92,17 @@ body {
           border: 2px solid red;
 
         }
+      }
+
+      .enterToCopy {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        height: 20px;
+        background: red;
+        font-size: 10px;
+        line-height: 20px;
+        padding: 0 5px;
       }
     }
   }

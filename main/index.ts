@@ -5,7 +5,7 @@ import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
 import log from 'electron-log'
 
-const { BrowserWindow, app, screen, ipcMain, Tray, Menu, globalShortcut } = electron
+const { BrowserWindow, app, screen, ipcMain, Tray, Menu, globalShortcut, clipboard } = electron
 
 const isDevelopment = !app.isPackaged
 
@@ -128,6 +128,12 @@ ipcMain.handle('requestSearch', (event, query: string) => {
 ipcMain.handle('clearSearch', (event) => {
   console.debug('RECEIVE MESSAGE: clearSearch')
   mainWindow.setSize(800, 94)
+})
+
+ipcMain.handle('writeClipboard', (event, text: string) => {
+  console.debug(`RECEIVE MESSAGE: writeClipboard, TEXT: ${text.replace(/\n/g, ' ')}`)
+  clipboard.writeText(text)
+  mainWindow.webContents.send('doneWriteClipboard')
 })
 
 ipcMain.handle('requestDeactivate', () => {

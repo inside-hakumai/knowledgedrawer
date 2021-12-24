@@ -2,6 +2,9 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark-dimmed.css'
 import MarkdownIt from 'markdown-it'
+import { HTMLElement } from 'node-html-parser'
+import { marked } from 'marked'
+import HTML = marked.Tokens.HTML
 
 const md: MarkdownIt = new MarkdownIt({
   highlight: (str, lang) => {
@@ -26,6 +29,12 @@ const App: React.VFC = () => {
   const [controllableArea, setControllableArea] = useState<'searchResult' | 'article' | null>(null)
   const [selectedCodeItem, setSelectedCodeItem] = useState<number | null>(null)
   const [articleCodeList, setArticleCodeList] = useState<NodeListOf<Element> | null>(null)
+  const [isDoneWriteClipboard, setIsDoneWriteClipboard] = useState(false)
+
+  const [enterToCopyPosition, setEnterToCopyPosition] = useState<{
+    top: number
+    right: number
+  } | null>(null)
 
   const formRef = useRef<HTMLInputElement>(null)
   const articleDivRef = useRef<HTMLDivElement>(null)
@@ -42,6 +51,11 @@ const App: React.VFC = () => {
       setSuggestItems([])
       setSelectedItem(null)
       formRef.current!.value = ''
+    })
+
+    // @ts-ignore
+    window.api.onDoneWriteClipboard(() => {
+      setIsDoneWriteClipboard(true)
     })
 
     formRef.current?.focus()
@@ -65,6 +79,44 @@ const App: React.VFC = () => {
     setSelectedItem(null)
   }
 
+  const changeSelectedCodeItem = (selectedIndex: number) => {
+    setSelectedCodeItem(selectedIndex)
+
+    articleCodeList!.forEach((code, index) => {
+      if (index === selectedIndex) {
+        code.classList.add('selected')
+      } else {
+        code.classList.remove('selected')
+      }
+    })
+
+    const parent = document
+      .querySelector<HTMLDivElement>('.contentsContainer')!
+      .getBoundingClientRect()
+    const selected = document
+      .querySelector<HTMLDivElement>('.hljs.selected')!
+      .getBoundingClientRect()
+
+    setEnterToCopyPosition({
+      top: (selected.top - parent.top + selected.height - 20) / 0.94,
+      right: 9,
+    })
+  }
+
+  const copyCode = () => {
+    if (selectedCodeItem === null) {
+      console.warn('Attempt to copy code although no code block is selected')
+      return
+    }
+    if (articleCodeList === null || articleCodeList.length === 0) {
+      console.warn('Attempt to copy code although current knowledge has no code block')
+      return
+    }
+
+    // @ts-ignore
+    window.api.writeClipboard(articleCodeList[selectedCodeItem].textContent)
+  }
+
   const handleKeyDown = async (event: React.KeyboardEvent<HTMLDivElement>) => {
     console.debug(`Key: ${event.key}`)
 
@@ -72,6 +124,7 @@ const App: React.VFC = () => {
       if (controllableArea === 'article') {
         setControllableArea('searchResult')
         setSelectedCodeItem(null)
+        setIsDoneWriteClipboard(false)
         articleCodeList?.forEach((code) => {
           code.classList.remove('selected')
         })
@@ -85,12 +138,14 @@ const App: React.VFC = () => {
       return
     }
 
-    if (event.key === 'Enter') {
-      if (articleCodeList !== null && articleCodeList.length > 0) {
-        setSelectedCodeItem(0)
-        articleCodeList[0].classList.add('selected')
+    if (event.key === 'Enter' && articleCodeList !== null && articleCodeList.length > 0) {
+      if (controllableArea === 'searchResult') {
         setControllableArea('article')
+        changeSelectedCodeItem(0)
+      } else if (controllableArea === 'article' && selectedCodeItem !== null) {
+        copyCode()
       }
+      return
     }
 
     let triggeredAction: 'up' | 'down'
@@ -112,14 +167,8 @@ const App: React.VFC = () => {
       }
 
       const nextIndex = selectedCodeItem + (triggeredAction === 'down' ? 1 : -1)
-      setSelectedCodeItem(nextIndex)
-      articleCodeList.forEach((code, index) => {
-        if (index === nextIndex) {
-          code.classList.add('selected')
-        } else {
-          code.classList.remove('selected')
-        }
-      })
+      changeSelectedCodeItem(nextIndex)
+      setIsDoneWriteClipboard(false)
       console.debug('Selected codeItem:', nextIndex)
     } else {
       if (
@@ -193,6 +242,14 @@ const App: React.VFC = () => {
                   />
                 )}
               </div>
+              {selectedCodeItem !== null && enterToCopyPosition !== null && (
+                <div
+                  className='enterToCopy'
+                  style={{ top: enterToCopyPosition.top, right: enterToCopyPosition.right }}
+                >
+                  {isDoneWriteClipboard ? 'Copied!' : 'Enter to copy'}
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -11,6 +11,11 @@ contextBridge.exposeInMainWorld('api', {
     return await ipcRenderer.invoke('clearSearch')
   },
 
+  writeClipboard: async (text: string): Promise<void> => {
+    console.debug('REQUEST MESSAGE: writeClipboard')
+    return await ipcRenderer.invoke('writeClipboard', text)
+  },
+
   onReceiveSuggest: (callback: Function) => {
     ipcRenderer.on('responseSearch', (event, result) => {
       console.debug('RECEIVE MESSAGE: responseSearch, result:', result)
@@ -26,6 +31,13 @@ contextBridge.exposeInMainWorld('api', {
   onDoneDeactivate: (callback: Function) => {
     ipcRenderer.on('doneDeactivate', (event, result) => {
       console.debug('RECEIVE MESSAGE: doneDeactivate')
+      callback(result)
+    })
+  },
+
+  onDoneWriteClipboard: (callback: Function) => {
+    ipcRenderer.on('doneWriteClipboard', (event, result) => {
+      console.debug('RECEIVE MESSAGE: doneWriteClipboard')
       callback(result)
     })
   },
