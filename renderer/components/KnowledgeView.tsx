@@ -47,7 +47,6 @@ const KnowledgeView: React.VFC<Props> = ({ renderingContent }, ref) => {
   })
 
   useEffect(() => {
-    // @ts-ignore
     window.api.onDoneWriteClipboard(() => {
       setIsCopiedCode(true)
     })
@@ -65,7 +64,7 @@ const KnowledgeView: React.VFC<Props> = ({ renderingContent }, ref) => {
     }
   }, [renderingContent])
 
-  const copyCode = () => {
+  const copyCode = async () => {
     const currentCodeBlockSourcePosList = codeBlockSourcePosListRef.current
     const currentSelectedCodeBlockIndex = selectedCodeBlockIndexRef.current
 
@@ -81,10 +80,10 @@ const KnowledgeView: React.VFC<Props> = ({ renderingContent }, ref) => {
     const selectedCode = renderingAreaRef.current!.querySelector('.selectedWrapper pre')
     if (selectedCode === null) {
       console.warn('Attempt to copy code although no code block is selected')
-      return
+    } else if (selectedCode.textContent === null) {
+      console.warn('Selected code block has no text content')
     } else {
-      // @ts-ignore
-      window.api.writeClipboard(selectedCode.textContent)
+      await window.api.writeClipboard(selectedCode.textContent)
     }
   }
 
@@ -102,7 +101,7 @@ const KnowledgeView: React.VFC<Props> = ({ renderingContent }, ref) => {
 
     if (event.key === 'Enter') {
       if (currentSelectedCodeBlockIndex !== null) {
-        copyCode()
+        await copyCode()
       } else {
         console.warn('Attempt to copy code although no code block is selected')
       }

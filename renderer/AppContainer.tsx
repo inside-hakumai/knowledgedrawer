@@ -24,12 +24,10 @@ const AppContainer: React.VFC = () => {
   })
 
   useEffect(() => {
-    // @ts-ignore
-    window.api.onReceiveSuggest((result) => {
-      setSuggestItems(result)
+    window.api.onReceiveSuggestions((suggestions: { title: string; contents: string }[]) => {
+      setSuggestItems(suggestions)
     })
 
-    // @ts-ignore
     window.api.onDoneDeactivate(() => {
       setIsDirty(false)
       setSuggestItems([])
@@ -52,16 +50,14 @@ const AppContainer: React.VFC = () => {
   const onFormChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsDirty(true)
     if (event.target.value.length === 0) {
-      clearResult()
+      await clearResult()
     } else {
-      // @ts-ignore
-      window.api.search(event.target.value)
+      await window.api.search(event.target.value)
     }
   }
 
-  const clearResult = () => {
-    // @ts-ignore
-    window.api.clearSearch()
+  const clearResult = async () => {
+    await window.api.clearSearch()
     setIsDirty(false)
     setSuggestItems([])
     setSelectedItem(null)
@@ -109,9 +105,8 @@ const AppContainer: React.VFC = () => {
     console.debug('Selected item:', nextIndex)
   }
 
-  const requestDeactivate = () => {
-    // @ts-ignore
-    window.api.requestDeactivate()
+  const requestDeactivate = async () => {
+    await window.api.requestDeactivate()
   }
 
   useEffect(() => {
