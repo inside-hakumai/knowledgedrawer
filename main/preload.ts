@@ -25,7 +25,7 @@ contextBridge.exposeInMainWorld('api', <IPCFunctions>{
   },
 
   onDoneWriteClipboard: (callback: Function) => {
-    ipcRenderer.on('doneWriteClipboard', (event, result) => {
+    ipcRenderer.on('doneWriteClipboard', (_event, _result) => {
       console.debug('RECEIVE MESSAGE: doneWriteClipboard')
       callback()
     })
@@ -37,7 +37,7 @@ contextBridge.exposeInMainWorld('api', <IPCFunctions>{
   },
 
   onDoneDeactivate: (callback: Function) => {
-    ipcRenderer.on('doneDeactivate', (event, result) => {
+    ipcRenderer.on('doneDeactivate', (_event, _result) => {
       console.debug('RECEIVE MESSAGE: doneDeactivate')
       callback()
     })

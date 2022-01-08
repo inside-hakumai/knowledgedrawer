@@ -1,9 +1,9 @@
-import electron from 'electron'
-import path from 'path'
 import * as fs from 'fs/promises'
+import path from 'path'
+import electron from 'electron'
+import log from 'electron-log'
 import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
-import log from 'electron-log'
 
 const { BrowserWindow, app, screen, ipcMain, Tray, Menu, globalShortcut, clipboard } = electron
 
@@ -13,7 +13,7 @@ const isDevelopment = !app.isPackaged
 let treyIconPath: string
 
 // ウィンドウを非表示にする挙動を無効にするかどうか（開発時に使用）
-let isDisabledDeactivation = isDevelopment && process.env.DISABLE_DEACTIVATION === 'true'
+const isDisabledDeactivation = isDevelopment && process.env.DISABLE_DEACTIVATION === 'true'
 
 if (isDevelopment) {
   require('electron-reload')(__dirname, {
@@ -32,6 +32,92 @@ let mainWindow: Electron.BrowserWindow
 let tray: electron.Tray | null = null
 let suggestItems: { title: string; contents: string }[] = []
 
+const hideWindow = () => {
+  if (isDisabledDeactivation) {
+    console.debug('Hiding window is requested but ignored because DISABLE_DEACTIVATION is "true"')
+  } else {
+    mainWindow.hide()
+    mainWindow.webContents.send('doneDeactivate')
+  }
+}
+
+const showWindow = () => {
+  mainWindow.show()
+}
+
+ipcMain.handle('requestSearch', (event, query: string) => {
+  console.debug(`RECEIVE MESSAGE: requestSearch, QUERY: ${query}`)
+
+  // ここに検索処理を書く
+
+  mainWindow.setSize(800, 752)
+  // event.reply('responseSearch', sampleSuggestItems)
+  mainWindow.webContents.send('responseSearch', suggestItems)
+})
+
+ipcMain.handle('clearSearch', (_event) => {
+  console.debug('RECEIVE MESSAGE: clearSearch')
+  mainWindow.setSize(800, 94)
+})
+
+ipcMain.handle('writeClipboard', (event, text: string) => {
+  console.debug(`RECEIVE MESSAGE: writeClipboard, TEXT: ${text.replace(/\n/g, ' ')}`)
+  clipboard.writeText(text)
+  mainWindow.webContents.send('doneWriteClipboard')
+})
+
+ipcMain.handle('requestDeactivate', () => {
+  console.debug('RECEIVE MESSAGE: requestDeactivate')
+  hideWindow()
+})
+
+const toggleWindow = () => {
+  if (mainWindow.isVisible()) {
+    hideWindow()
+  } else {
+    showWindow()
+  }
+}
+
+const ensureDirectoryExists = async (dirPath: string) => {
+  let isFile = false
+
+  try {
+    const stat = await fs.stat(dirPath)
+    if (stat.isFile()) {
+      isFile = true
+    }
+  } catch (error) {
+    await fs.mkdir(dirPath)
+  }
+
+  if (isFile) {
+    throw new Error('Specified path is file path')
+  }
+}
+
+const prepareUserData = async () => {
+  const userDataDir = app.getPath('userData')
+  const knowledgeDir = path.join(userDataDir, 'knowledge')
+
+  await ensureDirectoryExists(knowledgeDir)
+
+  const files = await fs.readdir(knowledgeDir, { withFileTypes: true })
+  const markdownFiles = files.filter((file) => file.isFile() && file.name.endsWith('.md'))
+
+  suggestItems = await Promise.all(
+    markdownFiles.map(async (mdFile) => {
+      const fileText = await fs.readFile(path.join(knowledgeDir, mdFile.name), 'utf8')
+      const parsedMd = marked.parse(fileText)
+      const parsedHtml = parseHtml(parsedMd)
+      return {
+        title: parsedHtml.getElementsByTagName('h1')[0].text,
+        contents: fileText,
+      }
+    })
+  )
+}
+
 app.whenReady().then(async () => {
   await prepareUserData()
 
@@ -49,7 +135,7 @@ app.whenReady().then(async () => {
   tray.setContextMenu(contextMenu)
 
   const primaryDisplay = screen.getPrimaryDisplay()
-  const { width, height } = primaryDisplay.workAreaSize
+  const { width } = primaryDisplay.workAreaSize
 
   mainWindow = new BrowserWindow({
     width: 800,
@@ -93,89 +179,3 @@ process.on('uncaughtException', (error) => {
   log.error(error)
   app.quit()
 })
-
-const toggleWindow = () => {
-  if (mainWindow.isVisible()) {
-    hideWindow()
-  } else {
-    showWindow()
-  }
-}
-
-const hideWindow = () => {
-  if (isDisabledDeactivation) {
-    console.debug('Hiding window is requested but ignored because DISABLE_DEACTIVATION is "true"')
-  } else {
-    mainWindow.hide()
-    mainWindow.webContents.send('doneDeactivate')
-  }
-}
-
-const showWindow = () => {
-  mainWindow.show()
-}
-
-ipcMain.handle('requestSearch', (event, query: string) => {
-  console.debug(`RECEIVE MESSAGE: requestSearch, QUERY: ${query}`)
-
-  // ここに検索処理を書く
-
-  mainWindow.setSize(800, 752)
-  // event.reply('responseSearch', sampleSuggestItems)
-  mainWindow.webContents.send('responseSearch', suggestItems)
-})
-
-ipcMain.handle('clearSearch', (event) => {
-  console.debug('RECEIVE MESSAGE: clearSearch')
-  mainWindow.setSize(800, 94)
-})
-
-ipcMain.handle('writeClipboard', (event, text: string) => {
-  console.debug(`RECEIVE MESSAGE: writeClipboard, TEXT: ${text.replace(/\n/g, ' ')}`)
-  clipboard.writeText(text)
-  mainWindow.webContents.send('doneWriteClipboard')
-})
-
-ipcMain.handle('requestDeactivate', () => {
-  console.debug('RECEIVE MESSAGE: requestDeactivate')
-  hideWindow()
-})
-
-const prepareUserData = async () => {
-  const userDataDir = app.getPath('userData')
-  const knowledgeDir = path.join(userDataDir, 'knowledge')
-
-  await ensureDirectoryExists(knowledgeDir)
-
-  const files = await fs.readdir(knowledgeDir, { withFileTypes: true })
-  const markdownFiles = files.filter((file) => file.isFile() && file.name.endsWith('.md'))
-
-  suggestItems = await Promise.all(
-    markdownFiles.map(async (mdFile) => {
-      const fileText = await fs.readFile(path.join(knowledgeDir, mdFile.name), 'utf8')
-      const parsedMd = marked.parse(fileText)
-      const parsedHtml = parseHtml(parsedMd)
-      return {
-        title: parsedHtml.getElementsByTagName('h1')[0].text,
-        contents: fileText,
-      }
-    })
-  )
-}
-
-const ensureDirectoryExists = async (dirPath: string) => {
-  let isFile = false
-
-  try {
-    const stat = await fs.stat(dirPath)
-    if (stat.isFile()) {
-      isFile = true
-    }
-  } catch (error) {
-    await fs.mkdir(dirPath)
-  }
-
-  if (isFile) {
-    throw new Error('Specified path is file path')
-  }
-}

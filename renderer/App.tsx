@@ -1,6 +1,6 @@
-import { ActiveComponentManagerContainer } from './hooks/useActiveComponentManager'
-import AppContainer from './AppContainer'
 import React from 'react'
+import AppContainer from './AppContainer'
+import { ActiveComponentManagerContainer } from './hooks/useActiveComponentManager'
 
 const App: React.VFC = () => {
   return (

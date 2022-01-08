@@ -6,10 +6,10 @@ const defaultHandler = () => {
 
 const ActiveComponentManagerContext = createContext<{
   registerEventHandler: (
-    component: string,
-    handler: (event: React.KeyboardEvent) => Promise<void>
+    _component: string,
+    _handler: (_event: React.KeyboardEvent) => Promise<void>
   ) => void
-  changeActiveComponent: (component: 'searchResult' | 'knowledgeView') => void
+  changeActiveComponent: (_component: 'searchResult' | 'knowledgeView') => void
   activeComponent: 'searchResult' | 'knowledgeView' | null
 }>({
   registerEventHandler: defaultHandler,
@@ -22,13 +22,13 @@ export const ActiveComponentManagerContainer: React.FC = ({ children }) => {
     null
   )
   const [eventHandlers, setEventHandlers] = useState<{
-    [key: string]: (event: React.KeyboardEvent) => void
+    [key: string]: (_event: React.KeyboardEvent) => void
   }>({})
   const [activeEventHandler, setActiveEventHandler] = useState<string | null>(null)
 
   const registerEventHandler = (
     component: string,
-    handler: (event: React.KeyboardEvent) => void
+    handler: (_event: React.KeyboardEvent) => void
   ) => {
     console.debug(`EVENT HANDLER UPDATE: ${component}`)
     setEventHandlers({ ...eventHandlers, [component]: handler })

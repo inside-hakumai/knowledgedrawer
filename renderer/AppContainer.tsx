@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import 'highlight.js/styles/github-dark-dimmed.css'
-import KnowledgeView from './components/KnowledgeView'
+import KnowledgeViewContainer from './container/KnowledgeViewContainer'
 import useActiveComponentManager from './hooks/useActiveComponentManager'
 
 const AppContainer: React.VFC = () => {
@@ -17,35 +17,12 @@ const AppContainer: React.VFC = () => {
 
   const formRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    suggestItemsRef.current = suggestItems
-    selectedItemRef.current = selectedItem
-    activeComponentRef.current = activeComponent
-  })
-
-  useEffect(() => {
-    window.api.onReceiveSuggestions((suggestions: { title: string; contents: string }[]) => {
-      setSuggestItems(suggestions)
-    })
-
-    window.api.onDoneDeactivate(() => {
-      setIsDirty(false)
-      setSuggestItems([])
-      setSelectedItem(null)
-      formRef.current!.value = ''
-    })
-
-    registerEventHandler('searchResult', handleKeyDown)
-    changeActiveComponent('searchResult')
-
-    formRef.current?.focus()
-  }, [])
-
-  useEffect(() => {
-    if (activeComponent === 'searchResult') {
-    } else {
-    }
-  }, [activeComponent])
+  const clearResult = async () => {
+    await window.api.clearSearch()
+    setIsDirty(false)
+    setSuggestItems([])
+    setSelectedItem(null)
+  }
 
   const onFormChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsDirty(true)
@@ -56,11 +33,8 @@ const AppContainer: React.VFC = () => {
     }
   }
 
-  const clearResult = async () => {
-    await window.api.clearSearch()
-    setIsDirty(false)
-    setSuggestItems([])
-    setSelectedItem(null)
+  const requestDeactivate = async () => {
+    await window.api.requestDeactivate()
   }
 
   const handleKeyDown = async (event: React.KeyboardEvent) => {
@@ -105,9 +79,29 @@ const AppContainer: React.VFC = () => {
     console.debug('Selected item:', nextIndex)
   }
 
-  const requestDeactivate = async () => {
-    await window.api.requestDeactivate()
-  }
+  useEffect(() => {
+    suggestItemsRef.current = suggestItems
+    selectedItemRef.current = selectedItem
+    activeComponentRef.current = activeComponent
+  })
+
+  useEffect(() => {
+    window.api.onReceiveSuggestions((suggestions: { title: string; contents: string }[]) => {
+      setSuggestItems(suggestions)
+    })
+
+    window.api.onDoneDeactivate(() => {
+      setIsDirty(false)
+      setSuggestItems([])
+      setSelectedItem(null)
+      formRef.current!.value = ''
+    })
+
+    registerEventHandler('searchResult', handleKeyDown)
+    changeActiveComponent('searchResult')
+
+    formRef.current?.focus()
+  }, [])
 
   useEffect(() => {
     if (selectedItem === null && suggestItems.length > 0) {
@@ -139,7 +133,7 @@ const AppContainer: React.VFC = () => {
               </ul>
             </div>
 
-            <KnowledgeView
+            <KnowledgeViewContainer
               renderingContent={selectedItem !== null ? suggestItems[selectedItem].contents : null}
             />
           </div>

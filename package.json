@@ -12,7 +12,9 @@
     "dev:webpack": "webpack --watch --progress",
     "build:dev": "tsc -p tsconfig.main.json && webpack --progress",
     "build:prod": "tsc -p tsconfig.main.json && cross-env NODE_ENV=\"production\" webpack --progress",
-    "format": "prettier --write '**/*.{js,ts,jsx,tsx}'",
+    "format": "run-s format:eslint format:prettier",
+    "format:eslint": "eslint \"{main,renderer}/**/*.{js,jsx,ts,tsx}\" --format friendly --fix",
+    "format:prettier": "prettier --write '**/*.{js,ts,jsx,tsx}'",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install",
     "predist": "rimraf dist",
@@ -40,11 +42,23 @@
   "devDependencies": {
     "@types/mini-css-extract-plugin": "^2.4.0",
     "@types/react-syntax-highlighter": "^13.5.2",
+    "@typescript-eslint/eslint-plugin": "^5.9.0",
+    "@typescript-eslint/parser": "^5.9.0",
     "cross-env": "^7.0.3",
     "css-loader": "^6.5.1",
     "electron": "^16.0.4",
     "electron-builder": "^22.14.5",
     "electron-reload": "^2.0.0-alpha.1",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-formatter-friendly": "^7.0.0",
+    "eslint-import-resolver-typescript": "^2.5.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.2.0",
+    "eslint-plugin-react": "^7.28.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "html-webpack-plugin": "^5.5.0",
     "husky": "^7.0.4",
     "lint-staged": "^12.1.2",
@@ -61,7 +75,10 @@
     "webpack-cli": "^4.9.1"
   },
   "lint-staged": {
-    "*.{js,ts,jsx,tsx}": "prettier --write"
+    "*.{js,ts,jsx,tsx}": [
+      "eslint \"{main,renderer}/**/*.{js,jsx,ts,tsx}\" --format friendly --fix",
+      "prettier --write"
+    ]
   },
   "build": {
     "appId": "dev.insidehakumai.knowledgebase",
