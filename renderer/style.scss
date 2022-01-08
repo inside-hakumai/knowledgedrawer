@@ -78,31 +78,58 @@ body {
 
       }
 
-      code.hljs {
-        position: relative;
+      .contents {
 
-        &.selected::after {
-          display: block;
-          content: "";
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: calc(100% - 4px);
-          height: calc(100% - 4px);
-          border: 2px solid red;
+        pre.codeBlock > div {
+          line-height: 1 !important;
 
+          code {
+            position: relative;
+            line-height: 1 !important;
+
+            span {
+              font-size: 10px;
+              line-height: 1 !important;
+            }
+
+            &.selected::after {
+              display: block;
+              content: "";
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: calc(100% - 4px);
+              height: calc(100% - 4px);
+              border: 2px solid red;
+
+            }
+          }
         }
-      }
 
-      .enterToCopy {
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        height: 20px;
-        background: red;
-        font-size: 10px;
-        line-height: 20px;
-        padding: 0 5px;
+        .selectedWrapper {
+          position: relative;
+
+          .enterToCopy {
+            position: absolute;
+            width: calc(100% - 4px);
+            height: calc(100% - 4px);
+            top: 0;
+            left: 0;
+            border: 2px solid red;
+
+            span {
+              position: absolute;
+              right: -1px;
+              bottom: -1px;
+              height: 20px;
+              background: red;
+              font-size: 10px;
+              line-height: 20px;
+              padding: 0 5px;
+            }
+          }
+        }
+
       }
     }
   }
