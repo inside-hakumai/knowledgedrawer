@@ -4,6 +4,7 @@ import electron from 'electron'
 import log from 'electron-log'
 import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
+import { prepareSearchEngine, searchKnowledge } from './lib/functions'
 
 const { BrowserWindow, app, screen, ipcMain, Tray, Menu, globalShortcut, clipboard } = electron
 
@@ -48,11 +49,26 @@ const showWindow = () => {
 ipcMain.handle('requestSearch', (event, query: string) => {
   console.debug(`RECEIVE MESSAGE: requestSearch, QUERY: ${query}`)
 
-  // ここに検索処理を書く
+  const suggestionResult = searchKnowledge(query)
+  const suggestions = suggestionResult
+    .sort((a, b) => {
+      if (a.score! > b.score!) {
+        return -1
+      } else if (a.score! < b.score!) {
+        return 1
+      } else {
+        return 0
+      }
+    })
+    .map((item) => {
+      return {
+        title: item.item.title,
+        contents: item.item.contents,
+      }
+    })
 
   mainWindow.setSize(800, 752)
-  // event.reply('responseSearch', sampleSuggestItems)
-  mainWindow.webContents.send('responseSearch', suggestItems)
+  mainWindow.webContents.send('responseSearch', suggestions)
 })
 
 ipcMain.handle('clearSearch', (_event) => {
@@ -120,6 +136,7 @@ const prepareUserData = async () => {
 
 app.whenReady().then(async () => {
   await prepareUserData()
+  prepareSearchEngine(suggestItems)
 
   // 本番環境かつMacOSでの起動時、Dockにアイコンを表示させない
   if (app.isPackaged && process.platform === 'darwin') {
