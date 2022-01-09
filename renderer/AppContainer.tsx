@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import 'highlight.js/styles/github-dark-dimmed.css'
 import KnowledgeViewContainer from './container/KnowledgeViewContainer'
 import useActiveComponentManager from './hooks/useActiveComponentManager'
+import { mapKeyToAction } from './lib/functions'
 
 const AppContainer: React.VFC = () => {
   const { registerEventHandler, changeActiveComponent, activeComponent } =
@@ -57,13 +58,8 @@ const AppContainer: React.VFC = () => {
       return
     }
 
-    let triggeredAction: 'ArrowUp' | 'ArrowDown'
-
-    if (event.key === 'ArrowUp' || (event.ctrlKey && event.key === 'p')) {
-      triggeredAction = 'ArrowUp'
-    } else if (event.key === 'ArrowDown' || (event.ctrlKey && event.key === 'n')) {
-      triggeredAction = 'ArrowDown'
-    } else {
+    const triggeredAction = mapKeyToAction(event)
+    if (triggeredAction === null) {
       return
     }
 

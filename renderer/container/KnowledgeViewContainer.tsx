@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import KnowledgeViewComponent from '../components/KnowledgeViewComponent'
 import useActiveComponentManager from '../hooks/useActiveComponentManager'
+import { mapKeyToAction } from '../lib/functions'
 
 interface Props {
   renderingContent: string | null
@@ -64,12 +65,8 @@ const KnowledgeViewContainer: React.VFC<Props> = ({ renderingContent }) => {
       return
     }
 
-    let triggeredAction: 'ArrowUp' | 'ArrowDown'
-    if (event.key === 'ArrowUp' || (event.ctrlKey && event.key === 'p')) {
-      triggeredAction = 'ArrowUp'
-    } else if (event.key === 'ArrowDown' || (event.ctrlKey && event.key === 'n')) {
-      triggeredAction = 'ArrowDown'
-    } else {
+    const triggeredAction = mapKeyToAction(event)
+    if (triggeredAction === null) {
       return
     }
 
