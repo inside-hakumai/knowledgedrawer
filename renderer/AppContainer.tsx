@@ -9,11 +9,15 @@ const AppContainer: React.VFC = () => {
     useActiveComponentManager()
 
   const [isDirty, setIsDirty] = useState(false)
-  const [suggestItems, setSuggestItems] = useState<{ title: string; contents: string }[]>([])
-  const [selectedItem, setSelectedItem] = useState<number | null>(null)
+  const [suggestions, setSuggestions] = useState<{
+    items: { title: string; contents: string }[]
+    selectedIndex: number | null
+  }>({
+    items: [],
+    selectedIndex: null,
+  })
 
-  const suggestItemsRef = useRef<typeof suggestItems>(suggestItems)
-  const selectedItemRef = useRef<typeof selectedItem>(selectedItem)
+  const suggestionsRef = useRef<typeof suggestions>(suggestions)
   const activeComponentRef = useRef<typeof activeComponent>(activeComponent)
 
   const formRef = useRef<HTMLInputElement>(null)
@@ -21,8 +25,10 @@ const AppContainer: React.VFC = () => {
   const clearResult = async () => {
     await window.api.clearSearch()
     setIsDirty(false)
-    setSuggestItems([])
-    setSelectedItem(null)
+    setSuggestions({
+      items: [],
+      selectedIndex: null,
+    })
   }
 
   const onFormChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,15 +47,14 @@ const AppContainer: React.VFC = () => {
   const handleKeyDown = async (event: React.KeyboardEvent) => {
     console.debug('AppContainer', event.key)
 
-    const currentSuggestItems = suggestItemsRef.current
-    const currentSelectedItem = selectedItemRef.current
+    const currentSuggestions = suggestionsRef.current
 
     if (event.key === 'Escape') {
       await requestDeactivate()
       return
     }
 
-    if (currentSelectedItem === null) {
+    if (currentSuggestions.selectedIndex === null) {
       return
     }
 
@@ -64,32 +69,40 @@ const AppContainer: React.VFC = () => {
     }
 
     if (
-      (triggeredAction === 'ArrowDown' && currentSelectedItem === currentSuggestItems.length - 1) ||
-      (triggeredAction === 'ArrowUp' && currentSelectedItem === 0)
+      (triggeredAction === 'ArrowDown' &&
+        currentSuggestions.selectedIndex === currentSuggestions.items.length - 1) ||
+      (triggeredAction === 'ArrowUp' && currentSuggestions.selectedIndex === 0)
     ) {
       return
     }
 
-    const nextIndex = currentSelectedItem + (triggeredAction === 'ArrowDown' ? 1 : -1)
-    setSelectedItem(nextIndex)
+    const nextIndex = currentSuggestions.selectedIndex + (triggeredAction === 'ArrowDown' ? 1 : -1)
+    setSuggestions({
+      items: currentSuggestions.items,
+      selectedIndex: nextIndex,
+    })
     console.debug('Selected item:', nextIndex)
   }
 
   useEffect(() => {
-    suggestItemsRef.current = suggestItems
-    selectedItemRef.current = selectedItem
+    suggestionsRef.current = suggestions
     activeComponentRef.current = activeComponent
   })
 
   useEffect(() => {
     window.api.onReceiveSuggestions((suggestions: { title: string; contents: string }[]) => {
-      setSuggestItems(suggestions)
+      setSuggestions({
+        items: suggestions,
+        selectedIndex: suggestions.length > 0 ? 0 : null,
+      })
     })
 
     window.api.onDoneDeactivate(() => {
       setIsDirty(false)
-      setSuggestItems([])
-      setSelectedItem(null)
+      setSuggestions({
+        items: [],
+        selectedIndex: null,
+      })
       formRef.current!.value = ''
     })
 
@@ -98,14 +111,6 @@ const AppContainer: React.VFC = () => {
 
     formRef.current?.focus()
   }, [])
-
-  useEffect(() => {
-    if (selectedItem === null && suggestItems.length > 0) {
-      setSelectedItem(0)
-    } else if (suggestItems.length === 0) {
-      setSelectedItem(null)
-    }
-  }, [suggestItems])
 
   return (
     <div className={`renderingArea ${isDirty ? 'isDirty' : ''}`}>
@@ -118,10 +123,12 @@ const AppContainer: React.VFC = () => {
           <div className='result'>
             <div className='suggestContainer'>
               <ul className='suggestList'>
-                {suggestItems.map((item, index) => (
+                {suggestions.items.map((item, index) => (
                   <li
                     key={`suggest-${index}`}
-                    className={`suggestList-item ${selectedItem === index ? 'selected' : ''}`}
+                    className={`suggestList-item ${
+                      suggestions.selectedIndex === index ? 'selected' : ''
+                    }`}
                   >
                     {item.title}
                   </li>
@@ -130,7 +137,11 @@ const AppContainer: React.VFC = () => {
             </div>
 
             <KnowledgeViewContainer
-              renderingContent={selectedItem !== null ? suggestItems[selectedItem].contents : null}
+              renderingContent={
+                suggestions.selectedIndex !== null
+                  ? suggestions.items[suggestions.selectedIndex].contents
+                  : null
+              }
             />
           </div>
         )}
