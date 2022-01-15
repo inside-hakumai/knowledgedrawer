@@ -87,8 +87,19 @@
     "files": [
       "build/**/*"
     ],
+    "mac": {
+      "icon": "assets/icon.png"
+    },
+    "win": {
+      "icon": "assets/icon.png"
+    },
+    "linux": {
+      "icon": "assets/icon.png"
+    },
     "extraResources": [
-      "assets/**/*"
+      "assets/**/*",
+      "!assets/icon.ai",
+      "!assets/trayIcon.ai"
     ]
   }
 }

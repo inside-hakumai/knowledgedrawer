@@ -6,7 +6,8 @@ import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
 import { prepareSearchEngine, searchKnowledge } from './lib/functions'
 
-const { BrowserWindow, app, screen, ipcMain, Tray, Menu, globalShortcut, clipboard } = electron
+const { BrowserWindow, app, screen, ipcMain, Tray, Menu, globalShortcut, clipboard, nativeTheme } =
+  electron
 
 const isDevelopment = !app.isPackaged
 
@@ -16,6 +17,8 @@ let treyIconPath: string
 // ウィンドウを非表示にする挙動を無効にするかどうか（開発時に使用）
 const isDisabledDeactivation = isDevelopment && process.env.DISABLE_DEACTIVATION === 'true'
 
+const trayIconFileName = nativeTheme.shouldUseDarkColors ? 'trayIcon-dark.png' : 'trayIcon.png'
+
 if (isDevelopment) {
   require('electron-reload')(__dirname, {
     electron: path.join(__dirname, '../node_modules', '.bin', 'electron'),
@@ -23,10 +26,10 @@ if (isDevelopment) {
     hardResetMethod: 'exit',
   })
 
-  treyIconPath = path.join(__dirname, '..', 'assets', 'icon.png')
+  treyIconPath = path.join(__dirname, '..', 'assets', trayIconFileName)
 } else {
   Object.assign(console, log.functions)
-  treyIconPath = path.join(process.resourcesPath, 'assets', 'icon.png')
+  treyIconPath = path.join(process.resourcesPath, 'assets', trayIconFileName)
 }
 
 let mainWindow: Electron.BrowserWindow
