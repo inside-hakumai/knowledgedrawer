@@ -17,8 +17,11 @@
     "format:prettier": "prettier --write '**/*.{js,ts,jsx,tsx}'",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install",
-    "predist": "rimraf dist",
-    "dist": "npm run build:prod && electron-builder"
+    "predist": "rimraf dist && npm run build:prod",
+    "dist": "run-s dist:*",
+    "dist:mac": "electron-builder --macos",
+    "dist:windows": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
   },
   "author": "",
   "license": "ISC",
@@ -88,13 +91,16 @@
       "build/**/*"
     ],
     "mac": {
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "publish": ["github"]
     },
     "win": {
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "publish": ["github"]
     },
     "linux": {
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "publish": ["github"]
     },
     "extraResources": [
       "assets/**/*",
