@@ -1,8 +1,12 @@
+import React from 'react'
+import AppContainer from './AppContainer'
+import { ActiveComponentManagerContainer } from './hooks/useActiveComponentManager'
+
 const App: React.VFC = () => {
   return (
-    <div>
-      <h1>Hello World</h1>
-    </div>
+    <ActiveComponentManagerContainer>
+      <AppContainer />
+    </ActiveComponentManagerContainer>
   )
 }
 

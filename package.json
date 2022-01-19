@@ -2,37 +2,76 @@
   "name": "knowledgebase",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/index.js",
+  "main": "build/index.js",
   "scripts": {
-    "predev": "rimraf dist",
+    "predev": "rimraf build",
     "dev": "run-p dev:*",
-    "dev:start": "wait-on ./dist/index.html && cross-env NODE_ENV=\"development\" electron .",
+    "dev-disable-deactication": "cross-env DISABLE_DEACTIVATION=\"true\" npm run dev",
+    "dev:start": "wait-on ./build/index.html && cross-env NODE_ENV=\"development\" electron .",
     "dev:compile": "tsc -w -p tsconfig.main.json",
     "dev:webpack": "webpack --watch --progress",
-    "format": "prettier --write '**/*.{js,ts,jsx,tsx}'",
+    "build:dev": "tsc -p tsconfig.main.json && webpack --progress",
+    "build:prod": "tsc -p tsconfig.main.json && cross-env NODE_ENV=\"production\" webpack --progress",
+    "format": "run-s format:eslint format:prettier",
+    "format:eslint": "eslint \"{main,renderer}/**/*.{js,jsx,ts,tsx}\" --format friendly --fix",
+    "format:prettier": "prettier --write '**/*.{js,ts,jsx,tsx}'",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "predist": "rimraf dist && npm run build:prod",
+    "dist": "run-s dist:*",
+    "dist:mac": "electron-builder --macos",
+    "dist:windows": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/markdown-it": "^12.2.3",
+    "@types/marked": "^4.0.1",
     "@types/node": "^16.11.12",
     "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.11",
-    "electron": "^16.0.4",
+    "electron-log": "^4.4.3",
+    "fuse.js": "^6.5.3",
+    "highlight.js": "^11.3.1",
+    "markdown-it": "^12.3.0",
+    "marked": "^4.0.7",
+    "node-html-parser": "^5.1.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-markdown": "^7.1.2",
+    "react-syntax-highlighter": "^15.4.5",
     "typescript": "^4.5.3"
   },
   "devDependencies": {
+    "@types/mini-css-extract-plugin": "^2.4.0",
+    "@types/react-syntax-highlighter": "^13.5.2",
+    "@typescript-eslint/eslint-plugin": "^5.9.0",
+    "@typescript-eslint/parser": "^5.9.0",
     "cross-env": "^7.0.3",
+    "css-loader": "^6.5.1",
+    "electron": "^16.0.4",
+    "electron-builder": "^22.14.5",
     "electron-reload": "^2.0.0-alpha.1",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-formatter-friendly": "^7.0.0",
+    "eslint-import-resolver-typescript": "^2.5.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.2.0",
+    "eslint-plugin-react": "^7.28.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "html-webpack-plugin": "^5.5.0",
     "husky": "^7.0.4",
     "lint-staged": "^12.1.2",
+    "mini-css-extract-plugin": "^2.4.5",
     "npm-run-all": "^4.1.5",
     "prettier": "2.5.1",
     "rimraf": "^3.0.2",
+    "sass": "^1.45.0",
+    "sass-loader": "^12.4.0",
     "ts-loader": "^9.2.6",
     "ts-node": "^10.4.0",
     "wait-on": "^6.0.0",
@@ -40,6 +79,33 @@
     "webpack-cli": "^4.9.1"
   },
   "lint-staged": {
-    "*.{js,ts,jsx,tsx}": "prettier --write"
+    "*.{js,ts,jsx,tsx}": [
+      "eslint \"{main,renderer}/**/*.{js,jsx,ts,tsx}\" --format friendly --fix",
+      "prettier --write"
+    ]
+  },
+  "build": {
+    "appId": "dev.insidehakumai.knowledgebase",
+    "productName": "Knowledgebase",
+    "files": [
+      "build/**/*"
+    ],
+    "mac": {
+      "icon": "assets/icon.png",
+      "publish": ["github"]
+    },
+    "win": {
+      "icon": "assets/icon.png",
+      "publish": ["github"]
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "publish": ["github"]
+    },
+    "extraResources": [
+      "assets/**/*",
+      "!assets/icon.ai",
+      "!assets/trayIcon.ai"
+    ]
   }
 }

@@ -1,0 +1,72 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true,
+        "node": true
+    },
+    "globals": {
+        "Electron": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "standard",
+        "plugin:import/recommended",
+        "plugin:import/typescript",
+        "prettier"  // Prettierと競合するESLintの検査項目を無効化するために追加している。必ずextendsの最後に置く
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "ecmaVersion": 2021,
+        "sourceType": "module"
+    },
+    "plugins": [
+        "react",
+        "@typescript-eslint",
+        "unused-imports"
+    ],
+    "settings": {
+        "import/parsers": {
+            "@typescript-eslint/parser": [".ts", ".tsx"]
+        },
+        "import/resolver": {
+            "typescript": {
+                "alwaysTryTypes": true
+            }
+        }
+    },
+    "rules": {
+        // 文章中に含まれる空白文字が怒られる場合があるので無効化
+        "no-irregular-whitespace": "off",
+
+        // 定義しておきながら使用していない変数を怒る設定だが、変数の先頭がアンダーバーで始まる変数は見逃す
+        "no-unused-vars": [
+            "warn",
+            {
+                "argsIgnorePattern": "^_"
+            }
+        ],
+
+        // import文はアルファベット順で並んでいるべき
+        "import/order": [
+            "warn",
+            {
+                "alphabetize": {
+                    "order": "asc"
+                }
+            }
+        ],
+
+        // 未使用のimport文は残しておかない
+        "unused-imports/no-unused-imports": "warn",
+
+        "no-use-before-define": "off",
+        "@typescript-eslint/no-use-before-define": ["error"],
+        "react/prop-types": "off",
+        "react/display-name": "off",
+        "react/react-in-jsx-scope": "off"
+    }
+}
