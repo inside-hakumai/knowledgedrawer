@@ -8,4 +8,5 @@ export interface IPCFunctions {
   onDoneWriteClipboard: (callback: () => void) => void
   requestDeactivate: () => Promise<void>
   onDoneDeactivate: (callback: () => void) => void
+  createNewKnowledge: () => Promise<void>
 }

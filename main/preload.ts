@@ -42,4 +42,8 @@ contextBridge.exposeInMainWorld('api', <IPCFunctions>{
       callback()
     })
   },
+
+  createNewKnowledge: async (): Promise<void> => {
+    await ipcRenderer.invoke('createNewKnowledge')
+  },
 })

@@ -24,6 +24,7 @@ body {
   }
 
   .formContainer {
+    position: relative;
     padding: 8px;
     width: 784px;
     height: 84px;
@@ -36,6 +37,29 @@ body {
       background: none;
       border: none;
       outline: none;
+    }
+
+    .buttons {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+
+      i.fas {
+        font-size: 25px;
+        padding: 10px;
+        color: rgba(255, 255, 255, 0.8);
+
+        &:hover {
+          color: rgba(255, 255, 255, 1);
+          background: #ffffff40;
+          border-radius: 6px 0;
+          cursor: pointer;
+        }
+
+        &::before {
+          cursor: pointer;
+        }
+      }
     }
   }
 
@@ -139,6 +163,12 @@ body {
 
     .formContainer {
       border-bottom: 1px solid #0092a5;
+
+      .buttons {
+        i.fas:hover {
+          border-radius: 6px 0 0 0;
+        }
+      }
     }
   }
 

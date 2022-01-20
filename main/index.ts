@@ -4,6 +4,7 @@ import electron from 'electron'
 import log from 'electron-log'
 import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
+import open from 'open'
 import { prepareSearchEngine, searchKnowledge } from './lib/functions'
 
 const { BrowserWindow, app, screen, ipcMain, Tray, Menu, globalShortcut, clipboard, nativeTheme } =
@@ -49,6 +50,20 @@ const showWindow = () => {
   mainWindow.show()
 }
 
+const createNewKnowledgeFile = async () => {
+  const templateFilePath = isDevelopment
+    ? path.join(__dirname, '..', 'assets', 'template.md')
+    : path.join(process.resourcesPath, 'assets', 'template.md')
+
+  const userDataDir = app.getPath('userData')
+  const knowledgeDir = path.join(userDataDir, 'knowledge')
+  const destFilePath = path.join(knowledgeDir, `${Date.now()}.md`)
+
+  await fs.copyFile(templateFilePath, destFilePath)
+
+  await open(destFilePath)
+}
+
 ipcMain.handle('requestSearch', (event, query: string) => {
   console.debug(`RECEIVE MESSAGE: requestSearch, QUERY: ${query}`)
 
@@ -90,6 +105,10 @@ ipcMain.handle('requestDeactivate', () => {
   hideWindow()
 })
 
+ipcMain.handle('createNewKnowledge', async () => {
+  await createNewKnowledgeFile()
+})
+
 const toggleWindow = () => {
   if (mainWindow.isVisible()) {
     hideWindow()
@@ -118,6 +137,7 @@ const ensureDirectoryExists = async (dirPath: string) => {
 const prepareUserData = async () => {
   const userDataDir = app.getPath('userData')
   const knowledgeDir = path.join(userDataDir, 'knowledge')
+  // TODO: ホームディレクトリ直下にドットディレクトリを作成してその中にmdファイルを置くようにする
 
   await ensureDirectoryExists(knowledgeDir)
 

@@ -117,6 +117,9 @@ const AppContainer: React.VFC = () => {
       <div className='wrapper'>
         <div className='formContainer'>
           <input className='queryForm' type='text' onChange={onFormChange} ref={formRef} />
+          <div className='buttons'>
+            <i className='fas fa-plus' onClick={window.api.createNewKnowledge} />
+          </div>
         </div>
 
         {isDirty && (
