@@ -180,8 +180,9 @@ app.whenReady().then(async () => {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 94,
+    backgroundColor: '#0092a5',
     resizable: false,
-    transparent: true,
+    transparent: false,
     frame: false,
     maximizable: false,
     webPreferences: {

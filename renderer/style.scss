@@ -11,15 +11,13 @@ body {
 .renderingArea {
   width: 100%;
   height: $defaultWindowHeight;
-  transform: scale(0.94);
-  transform-origin: 50% 0;
   overflow: hidden;
   outline: none;
 
   .wrapper {
     width: 100%;
     height: 100%;
-    background-color: #0092a5cf;
+    background-color: #0092a5;
     border-radius: 6px;
   }
 
@@ -27,7 +25,7 @@ body {
     position: relative;
     padding: 8px;
     width: 784px;
-    height: 84px;
+    height: 77px;
 
     .queryForm {
       color: #f7f7f7;
@@ -70,7 +68,7 @@ body {
     .suggestContainer {
       flex: 1;
       color: #f7f7f7;
-      border-right: 1px solid #0092a5;
+      border-right: 1px solid #00b2c9;
 
       .suggestList {
         margin: 0;
@@ -162,7 +160,7 @@ body {
     height: $expandedWindowHeight;
 
     .formContainer {
-      border-bottom: 1px solid #0092a5;
+      border-bottom: 1px solid #00b2c9;
 
       .buttons {
         i.fas:hover {
