@@ -1,3 +1,5 @@
+import IpcRendererEvent = Electron.IpcRendererEvent
+
 export interface IPCFunctions {
   search: (query: string) => Promise<string[]>
   clearSearch: () => Promise<void>
@@ -9,4 +11,7 @@ export interface IPCFunctions {
   requestDeactivate: () => Promise<void>
   onDoneDeactivate: (callback: () => void) => void
   createNewKnowledge: () => Promise<void>
+  onToggleMode: (callback: (event: IpcRendererEvent, ...args: any[]) => void) => void
+  exitPreference: () => Promise<void>
+  cleanupOnUnmountWorkbench: (listeners: [string, (...args: any) => void][]) => Promise<void>
 }

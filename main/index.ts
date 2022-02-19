@@ -64,6 +64,22 @@ const createNewKnowledgeFile = async () => {
   await open(destFilePath)
 }
 
+const toggleMode = (mode: 'workbench' | 'workbench-suggestion' | 'preference') => {
+  switch (mode) {
+    case 'workbench':
+      mainWindow.setSize(800, 94)
+      break
+    case 'workbench-suggestion':
+      mainWindow.setSize(800, 752)
+      break
+    case 'preference':
+      mainWindow.setSize(800, 564)
+      break
+  }
+
+  mainWindow.webContents.send('toggleMode', mode)
+}
+
 ipcMain.handle('requestSearch', (event, query: string) => {
   console.debug(`RECEIVE MESSAGE: requestSearch, QUERY: ${query}`)
 
@@ -85,13 +101,13 @@ ipcMain.handle('requestSearch', (event, query: string) => {
       }
     })
 
-  mainWindow.setSize(800, 752)
+  toggleMode('workbench-suggestion')
   mainWindow.webContents.send('responseSearch', suggestions)
 })
 
 ipcMain.handle('clearSearch', (_event) => {
   console.debug('RECEIVE MESSAGE: clearSearch')
-  mainWindow.setSize(800, 94)
+  toggleMode('workbench')
 })
 
 ipcMain.handle('writeClipboard', (event, text: string) => {
@@ -107,6 +123,11 @@ ipcMain.handle('requestDeactivate', () => {
 
 ipcMain.handle('createNewKnowledge', async () => {
   await createNewKnowledgeFile()
+})
+
+ipcMain.handle('exitPreference', () => {
+  console.debug('RECEIVE MESSAGE: exitPreference')
+  toggleMode('workbench')
 })
 
 const toggleWindow = () => {
@@ -170,6 +191,8 @@ app.whenReady().then(async () => {
   tray = new Tray(treyIconPath)
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Toggle Knowledgebase', click: toggleWindow },
+    { type: 'separator' },
+    { label: 'Preference', click: () => toggleMode('preference') },
     { label: 'Quit', role: 'quit' },
   ])
   tray.setContextMenu(contextMenu)

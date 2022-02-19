@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 import { IPCFunctions } from '../@types/preload'
 
 contextBridge.exposeInMainWorld('api', <IPCFunctions>{
@@ -45,5 +45,25 @@ contextBridge.exposeInMainWorld('api', <IPCFunctions>{
 
   createNewKnowledge: async (): Promise<void> => {
     await ipcRenderer.invoke('createNewKnowledge')
+  },
+
+  onToggleMode: (callback: (_event: IpcRendererEvent, ..._args: any[]) => void) => {
+    ipcRenderer.on('toggleMode', callback)
+    // ipcRenderer.on('toggleMode', (_event, mode) => {
+    //   console.log(callback)
+    //   console.debug('RECEIVE MESSAGE: toggleMode')
+    //   callback(mode)
+    // })
+  },
+
+  exitPreference: async (): Promise<void> => {
+    await ipcRenderer.invoke('exitPreference')
+  },
+
+  cleanupOnUnmountWorkbench: async (listeners: [string, (...args: any) => void][]) => {
+    console.log(listeners)
+    listeners.forEach(([event, listener]) => {
+      ipcRenderer.removeListener(event, listener)
+    })
   },
 })
