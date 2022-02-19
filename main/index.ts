@@ -1,3 +1,4 @@
+import { Stats } from 'fs'
 import * as fs from 'fs/promises'
 import path from 'path'
 import electron from 'electron'
@@ -5,10 +6,21 @@ import log from 'electron-log'
 import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
 import open from 'open'
+import { ErrorReport } from './lib/error'
 import { prepareSearchEngine, searchKnowledge } from './lib/functions'
 
-const { BrowserWindow, app, screen, ipcMain, Tray, Menu, globalShortcut, clipboard, nativeTheme } =
-  electron
+const {
+  BrowserWindow,
+  app,
+  screen,
+  ipcMain,
+  Tray,
+  Menu,
+  globalShortcut,
+  clipboard,
+  nativeTheme,
+  dialog,
+} = electron
 
 const isDevelopment = !app.isPackaged
 
@@ -155,19 +167,63 @@ const ensureDirectoryExists = async (dirPath: string) => {
   }
 }
 
-const prepareUserData = async () => {
+const parseSettingsString = async (settingsJsonPath: string) => {
+  const settingsRawString = await fs.readFile(settingsJsonPath, 'utf8')
+  const settings = JSON.parse(settingsRawString)
+
+  // if (settings.hasOwnProperty('fontSize')) {
+  //   const fontSize = settings.fontSize
+  //   if (fontSize < 8 || fontSize > 24) {
+  //     throw new Error('Invalid font size')
+  //   }
+  // }
+
+  return settings
+}
+
+const loadUserSettings = async () => {
   const userDataDir = app.getPath('userData')
-  const knowledgeDir = path.join(userDataDir, 'knowledge')
-  // TODO: ホームディレクトリ直下にドットディレクトリを作成してその中にmdファイルを置くようにする
+  await ensureDirectoryExists(userDataDir)
 
-  await ensureDirectoryExists(knowledgeDir)
+  const settingsJsonPath = path.join(userDataDir, 'settings.json')
 
-  const files = await fs.readdir(knowledgeDir, { withFileTypes: true })
+  let stat: Stats
+  try {
+    stat = await fs.stat(settingsJsonPath)
+  } catch (error) {
+    // fs.statはファイルが存在しなかった場合にエラーを返す
+    const defaultSettings = {
+      knowledgeStoreDirectory: path.join(userDataDir, 'knowledge'),
+    }
+    await fs.writeFile(settingsJsonPath, JSON.stringify(defaultSettings))
+
+    return defaultSettings
+  }
+
+  if (stat.isFile()) {
+    try {
+      return parseSettingsString(settingsJsonPath)
+    } catch (e) {
+      throw new Error('設定ファイルの中身が不正です。')
+    }
+  } else {
+    // TODO: 設定ファイルが置いてある想定のパスにファイル以外のものがあった場合のユーザーに見せるエラーメッセージを検討する
+    throw new Error('設定ファイルのファイル形式が不正です。')
+  }
+}
+
+const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
+  await ensureDirectoryExists(knowledgeStoreDirectoryPath)
+
+  const files = await fs.readdir(knowledgeStoreDirectoryPath, { withFileTypes: true })
   const markdownFiles = files.filter((file) => file.isFile() && file.name.endsWith('.md'))
 
   suggestItems = await Promise.all(
     markdownFiles.map(async (mdFile) => {
-      const fileText = await fs.readFile(path.join(knowledgeDir, mdFile.name), 'utf8')
+      const fileText = await fs.readFile(
+        path.join(knowledgeStoreDirectoryPath, mdFile.name),
+        'utf8'
+      )
       const parsedMd = marked.parse(fileText)
       const parsedHtml = parseHtml(parsedMd)
       return {
@@ -179,7 +235,18 @@ const prepareUserData = async () => {
 }
 
 app.whenReady().then(async () => {
-  await prepareUserData()
+  let settings: { knowledgeStoreDirectory: string }
+  try {
+    settings = await loadUserSettings()
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      throw new ErrorReport('初期化中にエラーが発生しました。', e.message)
+    } else {
+      throw e
+    }
+  }
+
+  await prepareKnowledge(settings.knowledgeStoreDirectory)
   prepareSearchEngine(suggestItems)
 
   // 本番環境かつMacOSでの起動時、Dockにアイコンを表示させない
@@ -241,5 +308,6 @@ app.whenReady().then(async () => {
 
 process.on('uncaughtException', (error) => {
   log.error(error)
+  dialog.showErrorBox('エラーが発生しました', error.message)
   app.quit()
 })
