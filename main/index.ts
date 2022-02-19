@@ -1,4 +1,3 @@
-import { Stats } from 'fs'
 import * as fs from 'fs/promises'
 import path from 'path'
 import electron from 'electron'
@@ -7,7 +6,8 @@ import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
 import open from 'open'
 import { ErrorReport } from './lib/error'
-import { prepareSearchEngine, searchKnowledge } from './lib/functions'
+import { ensureDirectoryExists, prepareSearchEngine, searchKnowledge } from './lib/functions'
+import { loadUserSettings, Settings } from './lib/settings'
 
 const {
   BrowserWindow,
@@ -47,6 +47,7 @@ if (isDevelopment) {
 
 let mainWindow: Electron.BrowserWindow
 let tray: electron.Tray | null = null
+let currentSettings: Settings | null = null
 let suggestItems: { title: string; contents: string }[] = []
 
 const hideWindow = () => {
@@ -89,7 +90,23 @@ const toggleMode = (mode: 'workbench' | 'workbench-suggestion' | 'preference') =
       break
   }
 
-  mainWindow.webContents.send('toggleMode', mode)
+  if (mode === 'preference') {
+    mainWindow.webContents.send('toggleMode', mode, currentSettings)
+  } else {
+    mainWindow.webContents.send('toggleMode', mode)
+  }
+}
+
+const selectDirectory = async (): Promise<string | null> => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+  })
+
+  if (canceled || !filePaths) {
+    return null
+  }
+
+  return filePaths[0]
 }
 
 ipcMain.handle('requestSearch', (event, query: string) => {
@@ -142,73 +159,21 @@ ipcMain.handle('exitPreference', () => {
   toggleMode('workbench')
 })
 
+ipcMain.handle('requestUserSettings', () => {
+  console.debug('RECEIVE MESSAGE: requestUserSettings')
+  mainWindow.webContents.send('responseUserSettings', currentSettings)
+})
+
+ipcMain.handle('requestSelectingDirectory', async () => {
+  const dirPath = await selectDirectory()
+  mainWindow.webContents.send('responseSelectingDirectory', dirPath)
+})
+
 const toggleWindow = () => {
   if (mainWindow.isVisible()) {
     hideWindow()
   } else {
     showWindow()
-  }
-}
-
-const ensureDirectoryExists = async (dirPath: string) => {
-  let isFile = false
-
-  try {
-    const stat = await fs.stat(dirPath)
-    if (stat.isFile()) {
-      isFile = true
-    }
-  } catch (error) {
-    await fs.mkdir(dirPath)
-  }
-
-  if (isFile) {
-    throw new Error('Specified path is file path')
-  }
-}
-
-const parseSettingsString = async (settingsJsonPath: string) => {
-  const settingsRawString = await fs.readFile(settingsJsonPath, 'utf8')
-  const settings = JSON.parse(settingsRawString)
-
-  // if (settings.hasOwnProperty('fontSize')) {
-  //   const fontSize = settings.fontSize
-  //   if (fontSize < 8 || fontSize > 24) {
-  //     throw new Error('Invalid font size')
-  //   }
-  // }
-
-  return settings
-}
-
-const loadUserSettings = async () => {
-  const userDataDir = app.getPath('userData')
-  await ensureDirectoryExists(userDataDir)
-
-  const settingsJsonPath = path.join(userDataDir, 'settings.json')
-
-  let stat: Stats
-  try {
-    stat = await fs.stat(settingsJsonPath)
-  } catch (error) {
-    // fs.statはファイルが存在しなかった場合にエラーを返す
-    const defaultSettings = {
-      knowledgeStoreDirectory: path.join(userDataDir, 'knowledge'),
-    }
-    await fs.writeFile(settingsJsonPath, JSON.stringify(defaultSettings))
-
-    return defaultSettings
-  }
-
-  if (stat.isFile()) {
-    try {
-      return parseSettingsString(settingsJsonPath)
-    } catch (e) {
-      throw new Error('設定ファイルの中身が不正です。')
-    }
-  } else {
-    // TODO: 設定ファイルが置いてある想定のパスにファイル以外のものがあった場合のユーザーに見せるエラーメッセージを検討する
-    throw new Error('設定ファイルのファイル形式が不正です。')
   }
 }
 
@@ -235,9 +200,10 @@ const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
 }
 
 app.whenReady().then(async () => {
-  let settings: { knowledgeStoreDirectory: string }
+  const userDataDir = app.getPath('userData')
+
   try {
-    settings = await loadUserSettings()
+    currentSettings = await loadUserSettings(userDataDir)
   } catch (e: unknown) {
     if (e instanceof Error) {
       throw new ErrorReport('初期化中にエラーが発生しました。', e.message)
@@ -246,7 +212,7 @@ app.whenReady().then(async () => {
     }
   }
 
-  await prepareKnowledge(settings.knowledgeStoreDirectory)
+  await prepareKnowledge(currentSettings.knowledgeStoreDirectory)
   prepareSearchEngine(suggestItems)
 
   // 本番環境かつMacOSでの起動時、Dockにアイコンを表示させない

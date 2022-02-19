@@ -3,6 +3,8 @@ $defaultWindowHeight: 100px;
 $expandedWindowHeight: 800px;
 $preferenceWindowHeight: 542px;
 
+$baseFontColor: #f7f7f7;
+
 body {
   margin: 0;
   overflow: hidden;
@@ -55,7 +57,7 @@ body {
         height: 77px;
 
         .queryForm {
-          color: #f7f7f7;
+          color: $baseFontColor;
           width: 100%;
           height: 100%;
           font-size: 40px;
@@ -94,7 +96,7 @@ body {
 
         .suggestContainer {
           flex: 1;
-          color: #f7f7f7;
+          color: $baseFontColor;
           border-right: 1px solid #00b2c9;
 
           .suggestList {
@@ -116,7 +118,7 @@ body {
           position: relative;
           padding: 8px;
           flex: 1;
-          color: #f7f7f7;
+          color: $baseFontColor;
 
           p > code {
             padding: 2px 4px;
@@ -193,7 +195,7 @@ body {
         margin-left: 10px;
         padding: 4px 8px;
         border-radius: 5px;
-        color: #f7f7f7;
+        color: $baseFontColor;
 
         &:hover {
           cursor: pointer;
@@ -202,6 +204,68 @@ body {
 
         i.fas {
           padding-right: 5px;
+        }
+      }
+
+      .form {
+        padding: 0 20px;
+        color: $baseFontColor;
+
+        dl {
+          display: flex;
+          flex-direction: column;
+
+          div.configItem {
+            display: flex;
+            flex-direction: row;
+            height: 50px;
+
+            dt {
+              min-width: 200px;
+              padding-right: 10px;
+              text-align: right;
+              line-height: 50px;
+            }
+
+            dd {
+              display: flex;
+              flex-direction: row;
+              flex: 1;
+              margin-left: 0;
+              overflow: hidden;
+              line-height: 50px;
+
+              span {
+                overflow-x: scroll;
+                white-space: nowrap;
+                margin-left: 10px;
+              }
+
+              input {
+                margin: 5px 0;
+              }
+
+              .button {
+                display: flex;
+                margin: 8px 0;
+                align-items: center;
+                border-radius: 5px;
+                background: #553a41;
+                color: #ffffff;
+                padding: 8px 12px;
+                white-space: nowrap;
+
+                &:hover {
+                  cursor: pointer;
+                  background: #79535d;
+                }
+              }
+
+              #knowledgeStoreDirInput {
+                display: none;
+              }
+            }
+          }
         }
       }
     }

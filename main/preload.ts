@@ -66,4 +66,28 @@ contextBridge.exposeInMainWorld('api', <IPCFunctions>{
       ipcRenderer.removeListener(event, listener)
     })
   },
+
+  requestUserSettings: async (): Promise<void> => {
+    console.debug('REQUEST MESSAGE: requestUserSettings')
+    await ipcRenderer.invoke('requestUserSettings')
+  },
+
+  onReceiveUserSettings: (callback: Function) => {
+    ipcRenderer.on('responseUserSettings', (event, settings) => {
+      console.debug('RECEIVE MESSAGE: responseUserSettings, result:', settings)
+      callback(settings)
+    })
+  },
+
+  requestSelectingDirectory: async (): Promise<void> => {
+    console.debug('REQUEST MESSAGE: requestSelectingDirectory')
+    await ipcRenderer.invoke('requestSelectingDirectory')
+  },
+
+  onReceiveSelectingDirectory: (callback: Function) => {
+    ipcRenderer.on('responseSelectingDirectory', (event, dirPath) => {
+      console.debug('RECEIVE MESSAGE: responseSelectingDirectory, result:', dirPath)
+      callback(dirPath)
+    })
+  },
 })
