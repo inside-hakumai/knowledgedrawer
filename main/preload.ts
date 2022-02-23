@@ -60,7 +60,7 @@ contextBridge.exposeInMainWorld('api', <IPCFunctions>{
     await ipcRenderer.invoke('exitPreference')
   },
 
-  cleanupOnUnmountWorkbench: async (listeners: [string, (...args: any) => void][]) => {
+  cleanupOnUnmountWorkbench: async (listeners: [string, (..._args: any) => void][]) => {
     console.log(listeners)
     listeners.forEach(([event, listener]) => {
       ipcRenderer.removeListener(event, listener)
@@ -90,4 +90,6 @@ contextBridge.exposeInMainWorld('api', <IPCFunctions>{
       callback(dirPath)
     })
   },
+
+  requestNonce: () => ipcRenderer.invoke('requestNonce'),
 })

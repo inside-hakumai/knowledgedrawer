@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import IpcRendererEvent = Electron.IpcRendererEvent
 
 export interface IPCFunctions {
@@ -18,4 +19,5 @@ export interface IPCFunctions {
   onReceiveUserSettings: (callback: Function) => void
   requestSelectingDirectory: () => Promise<void>
   onReceiveSelectingDirectory: (callback: Function) => void
+  requestNonce: () => Promise<string>
 }

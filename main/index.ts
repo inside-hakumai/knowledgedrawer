@@ -5,6 +5,7 @@ import log from 'electron-log'
 import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
 import open from 'open'
+import randomstring from 'randomstring'
 import { ErrorReport } from './lib/error'
 import { ensureDirectoryExists, prepareSearchEngine, searchKnowledge } from './lib/functions'
 import { loadUserSettings, Settings } from './lib/settings'
@@ -20,6 +21,7 @@ const {
   clipboard,
   nativeTheme,
   dialog,
+  session,
 } = electron
 
 const isDevelopment = !app.isPackaged
@@ -44,6 +46,8 @@ if (isDevelopment) {
   Object.assign(console, log.functions)
   treyIconPath = path.join(process.resourcesPath, 'assets', trayIconFileName)
 }
+
+const nonce = Buffer.from(randomstring.generate()).toString('base64')
 
 let mainWindow: Electron.BrowserWindow
 let tray: electron.Tray | null = null
@@ -169,6 +173,8 @@ ipcMain.handle('requestSelectingDirectory', async () => {
   mainWindow.webContents.send('responseSelectingDirectory', dirPath)
 })
 
+ipcMain.handle('requestNonce', () => nonce)
+
 const toggleWindow = () => {
   if (mainWindow.isVisible()) {
     hideWindow()
@@ -219,6 +225,15 @@ app.whenReady().then(async () => {
   if (app.isPackaged && process.platform === 'darwin') {
     app.dock.hide()
   }
+
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [`style-src 'self' 'nonce-${nonce}'; default-src 'self'`],
+      },
+    })
+  })
 
   // 通知領域に表示させるアイコンの設定
   tray = new Tray(treyIconPath)
