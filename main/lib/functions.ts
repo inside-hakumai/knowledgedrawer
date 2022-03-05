@@ -18,6 +18,15 @@ export const searchKnowledge = (query: string) => {
   return fuse.search(query)
 }
 
+export const isDirectoryExists = async (dirPath: string) => {
+  try {
+    const stat = await fs.stat(dirPath)
+    return stat.isDirectory()
+  } catch (error) {
+    return false
+  }
+}
+
 export const ensureDirectoryExists = async (dirPath: string) => {
   let isFile = false
 

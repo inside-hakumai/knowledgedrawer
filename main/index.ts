@@ -8,7 +8,12 @@ import { parse as parseHtml } from 'node-html-parser'
 import open from 'open'
 import randomstring from 'randomstring'
 import { ErrorReport } from './lib/error'
-import { ensureDirectoryExists, prepareSearchEngine, searchKnowledge } from './lib/functions'
+import {
+  ensureDirectoryExists,
+  isDirectoryExists,
+  prepareSearchEngine,
+  searchKnowledge,
+} from './lib/functions'
 import { loadUserSettings, Settings } from './lib/settings'
 
 const {
@@ -73,12 +78,17 @@ const createNewKnowledgeFile = async () => {
     ? path.join(__dirname, '..', 'assets', 'template.md')
     : path.join(process.resourcesPath, 'assets', 'template.md')
 
-  const userDataDir = app.getPath('userData')
-  const knowledgeDir = path.join(userDataDir, 'knowledge')
+  const store = new ElectronStore()
+  const knowledgeDir = store.get('knowledgeStoreDirectory', null)
+
+  // noinspection SuspiciousTypeOfGuard
+  if (typeof knowledgeDir !== 'string' || !(await isDirectoryExists(knowledgeDir))) {
+    throw new Error(`Invalid knowledgeStoreDirectory setting: ${knowledgeDir}`)
+  }
+
   const destFilePath = path.join(knowledgeDir, `${Date.now()}.md`)
 
   await fs.copyFile(templateFilePath, destFilePath)
-
   await open(destFilePath)
 }
 
