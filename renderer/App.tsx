@@ -1,12 +1,18 @@
+import { CacheProvider } from '@emotion/react'
 import React from 'react'
 import AppContainer from './AppContainer'
-import { ActiveComponentManagerContainer } from './hooks/useActiveComponentManager'
+import '@fortawesome/fontawesome-free/css/all.css'
+import { cache as emotionCache } from './lib/emotion'
 
 const App: React.VFC = () => {
   return (
-    <ActiveComponentManagerContainer>
-      <AppContainer />
-    </ActiveComponentManagerContainer>
+    <>
+      {emotionCache && (
+        <CacheProvider value={emotionCache}>
+          <AppContainer />
+        </CacheProvider>
+      )}
+    </>
   )
 }
 

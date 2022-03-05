@@ -1,145 +1,191 @@
-$windowWidth: 800px;
+$windowWidth: 752px;
 $defaultWindowHeight: 100px;
 $expandedWindowHeight: 800px;
+$preferenceWindowHeight: 542px;
+
+$baseFontColor: #f7f7f7;
 
 body {
   margin: 0;
   overflow: hidden;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 
 .renderingArea {
-  width: 100%;
-  height: $defaultWindowHeight;
-  transform: scale(0.94);
-  transform-origin: 50% 0;
   overflow: hidden;
   outline: none;
 
   .wrapper {
     width: 100%;
-    height: 100%;
     background-color: #0092a5cf;
     border-radius: 6px;
-  }
 
-  .formContainer {
-    padding: 8px;
-    width: 784px;
-    height: 84px;
+    &.wrapper-workbench {
+      height: $defaultWindowHeight;
+    }
+    &.wrapper-workbench-suggestion {
+      height: $expandedWindowHeight;
+    }
+    &.wrapper-preference {
+      //transition: height 0.2s ease-in-out 0s;
+      height: $preferenceWindowHeight;
 
-    .queryForm {
-      color: #f7f7f7;
+    }
+
+    .workbench {
       width: 100%;
-      height: 100%;
-      font-size: 40px;
-      background: none;
-      border: none;
-      outline: none;
-    }
-  }
+      height: $defaultWindowHeight;
 
-  .result {
-    display: flex;
-    height: 100%;
+      &.isDirty {
+        height: $expandedWindowHeight;
 
-    .suggestContainer {
-      flex: 1;
-      color: #f7f7f7;
-      border-right: 1px solid #0092a5;
+        .formContainer {
+          border-bottom: 1px solid #00b2c9;
 
-      .suggestList {
-        margin: 0;
-        padding: 0;
-        list-style-type: none;
-
-        &-item {
-          padding: 8px;
-
-          &.selected {
-            background: #00000040;
-          }
-        }
-      }
-    }
-
-    .contentsContainer {
-      position: relative;
-      padding: 8px;
-      flex: 1;
-      color: #f7f7f7;
-
-      p > code {
-        padding: 2px 4px;
-        font-size: 90%;
-        color: #000000;
-        background-color: #b2f6ff;
-        border-radius: 4px;
-
-      }
-
-      .contents {
-
-        pre.codeBlock > div {
-          line-height: 1 !important;
-
-          code {
-            position: relative;
-            line-height: 1 !important;
-
-            span {
-              font-size: 10px;
-              line-height: 1 !important;
-            }
-
-            &.selected::after {
-              display: block;
-              content: "";
-              position: absolute;
-              top: 0;
-              left: 0;
-              width: calc(100% - 4px);
-              height: calc(100% - 4px);
-              border: 2px solid red;
-
+          .buttons {
+            i.fas:hover {
+              border-radius: 6px 0 0 0;
             }
           }
         }
+      }
 
-        .selectedWrapper {
+      .formContainer {
+        position: relative;
+        padding: 8px;
+        width: 784px;
+        height: 77px;
+
+        .queryForm {
+          color: $baseFontColor;
+          width: 100%;
+          height: 100%;
+          font-size: 40px;
+          background: none;
+          border: none;
+          outline: none;
+        }
+
+        .buttons {
+          position: absolute;
+          bottom: 0;
+          right: 0;
+
+          i.fas {
+            font-size: 25px;
+            padding: 10px;
+            color: rgba(255, 255, 255, 0.8);
+
+            &:hover {
+              color: rgba(255, 255, 255, 1);
+              background: #ffffff40;
+              border-radius: 6px 0;
+              cursor: pointer;
+            }
+
+            &::before {
+              cursor: pointer;
+            }
+          }
+        }
+      }
+
+      .result {
+        display: flex;
+        height: 100%;
+
+        .suggestContainer {
+          flex: 1;
+          color: $baseFontColor;
+          border-right: 1px solid #00b2c9;
+
+          .suggestList {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+
+            &-item {
+              padding: 8px;
+
+              &.selected {
+                background: #00000040;
+              }
+            }
+          }
+        }
+
+        .contentsContainer {
           position: relative;
+          padding: 8px;
+          flex: 1;
+          color: $baseFontColor;
 
-          .enterToCopy {
-            position: absolute;
-            width: calc(100% - 4px);
-            height: calc(100% - 4px);
-            top: 0;
-            left: 0;
-            border: 2px solid red;
+          p > code {
+            padding: 2px 4px;
+            font-size: 90%;
+            color: #000000;
+            background-color: #b2f6ff;
+            border-radius: 4px;
 
-            span {
-              position: absolute;
-              right: -1px;
-              bottom: -1px;
-              height: 20px;
-              background: red;
-              font-size: 10px;
-              line-height: 20px;
-              padding: 0 5px;
+          }
+
+          .contents {
+
+            pre.codeBlock > div {
+              line-height: 1 !important;
+
+              code {
+                position: relative;
+                line-height: 1 !important;
+
+                span {
+                  font-size: 10px;
+                  line-height: 1 !important;
+                }
+
+                &.selected::after {
+                  display: block;
+                  content: "";
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: calc(100% - 4px);
+                  height: calc(100% - 4px);
+                  border: 2px solid red;
+
+                }
+              }
+            }
+
+            .selectedWrapper {
+              position: relative;
+
+              .enterToCopy {
+                position: absolute;
+                width: calc(100% - 4px);
+                height: calc(100% - 4px);
+                top: 0;
+                left: 0;
+                border: 2px solid red;
+
+                span {
+                  position: absolute;
+                  right: -1px;
+                  bottom: -1px;
+                  height: 20px;
+                  background: red;
+                  font-size: 10px;
+                  line-height: 20px;
+                  padding: 0 5px;
+                }
+              }
             }
           }
         }
-
       }
     }
   }
-
-  &.isDirty {
-    height: $expandedWindowHeight;
-
-    .formContainer {
-      border-bottom: 1px solid #0092a5;
-    }
-  }
-
 }
+

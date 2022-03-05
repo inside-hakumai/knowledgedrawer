@@ -1,6 +1,7 @@
-import { Configuration } from 'webpack'
+import path from 'path'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
+import { Configuration } from 'webpack'
 
 const NODE_ENV: 'development' | 'production' = (() => {
   if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production') {
@@ -15,7 +16,11 @@ const config: Configuration = {
   target: 'web',
   entry: './renderer/index.tsx',
   output: {
-    path: __dirname + '/build',
+    path: path.join(__dirname, 'build'),
+  },
+
+  experiments: {
+    topLevelAwait: true,
   },
 
   module: {
@@ -23,7 +28,18 @@ const config: Configuration = {
       {
         test: /\.tsx?$/,
         exclude: /node_modules/,
-        use: 'ts-loader',
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                ['@babel/preset-react', { runtime: 'automatic', importSource: '@emotion/react' }],
+              ],
+              plugins: ['@emotion/babel-plugin'],
+            },
+          },
+          'ts-loader',
+        ],
       },
       {
         test: /\.s?css$/,

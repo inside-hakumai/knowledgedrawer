@@ -67,6 +67,7 @@
         "@typescript-eslint/no-use-before-define": ["error"],
         "react/prop-types": "off",
         "react/display-name": "off",
-        "react/react-in-jsx-scope": "off"
+        "react/react-in-jsx-scope": "off",
+        "node/no-callback-literal": "off"
     }
 }

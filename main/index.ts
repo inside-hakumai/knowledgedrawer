@@ -2,12 +2,34 @@ import * as fs from 'fs/promises'
 import path from 'path'
 import electron from 'electron'
 import log from 'electron-log'
+import ElectronStore from 'electron-store'
 import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
-import { prepareSearchEngine, searchKnowledge } from './lib/functions'
+import open from 'open'
+import randomstring from 'randomstring'
+import { ErrorReport } from './lib/error'
+import {
+  ensureDirectoryExists,
+  isDirectoryExists,
+  isExecutable,
+  prepareSearchEngine,
+  searchKnowledge,
+} from './lib/functions'
+import { Settings } from './lib/settings'
 
-const { BrowserWindow, app, screen, ipcMain, Tray, Menu, globalShortcut, clipboard, nativeTheme } =
-  electron
+const {
+  BrowserWindow,
+  app,
+  screen,
+  ipcMain,
+  Tray,
+  Menu,
+  globalShortcut,
+  clipboard,
+  nativeTheme,
+  dialog,
+  session,
+} = electron
 
 const isDevelopment = !app.isPackaged
 
@@ -32,8 +54,11 @@ if (isDevelopment) {
   treyIconPath = path.join(process.resourcesPath, 'assets', trayIconFileName)
 }
 
+const nonce = Buffer.from(randomstring.generate()).toString('base64')
+
 let mainWindow: Electron.BrowserWindow
 let tray: electron.Tray | null = null
+const currentSettings: Settings | null = null
 let suggestItems: { title: string; contents: string }[] = []
 
 const hideWindow = () => {
@@ -47,6 +72,122 @@ const hideWindow = () => {
 
 const showWindow = () => {
   mainWindow.show()
+}
+
+const createNewKnowledgeFile = async () => {
+  const templateFilePath = isDevelopment
+    ? path.join(__dirname, '..', 'assets', 'template.md')
+    : path.join(process.resourcesPath, 'assets', 'template.md')
+
+  const store = new ElectronStore<Settings>()
+  const knowledgeDir = store.get('knowledgeStoreDirectory')
+
+  if (!(await isDirectoryExists(knowledgeDir))) {
+    throw new Error(`Invalid knowledgeStoreDirectory setting: ${knowledgeDir}`)
+  }
+
+  const destFilePath = path.join(knowledgeDir, `${Date.now()}.md`)
+
+  await fs.copyFile(templateFilePath, destFilePath)
+
+  const appForOpen = store.get('appForOpeningKnowledgeFile', null)
+
+  if (appForOpen === null) {
+    await open(destFilePath)
+    log.info(`Open ${destFilePath} with system default application`)
+  } else if (!(await isExecutable(appForOpen))) {
+    log.warn(`Invalid appForOpeningKnowledgeFile setting: ${appForOpen}`)
+    await open(destFilePath)
+    log.info(`Open ${destFilePath} with system default application`)
+  } else {
+    await open(destFilePath, {
+      app: {
+        name: appForOpen,
+      },
+    })
+    log.info(`Open ${destFilePath} with ${appForOpen}`)
+  }
+}
+
+const toggleMode = (mode: 'workbench' | 'workbench-suggestion' | 'preference') => {
+  switch (mode) {
+    case 'workbench':
+      mainWindow.setSize(800, 94)
+      break
+    case 'workbench-suggestion':
+      mainWindow.setSize(800, 752)
+      break
+    case 'preference':
+      mainWindow.setSize(800, 564)
+      break
+  }
+
+  if (mode === 'preference') {
+    const store = new ElectronStore<Settings>()
+    mainWindow.webContents.send('toggleMode', mode, store.store)
+  } else {
+    mainWindow.webContents.send('toggleMode', mode)
+  }
+}
+
+const selectDirectory = async (): Promise<
+  { dirPath: null; isCancelled: true } | { dirPath: string | null; isCancelled: false }
+> => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+  })
+
+  if (canceled) {
+    return {
+      dirPath: null,
+      isCancelled: true,
+    }
+  }
+
+  if (!filePaths) {
+    return {
+      dirPath: null,
+      isCancelled: false,
+    }
+  }
+
+  return {
+    dirPath: filePaths[0],
+    isCancelled: false,
+  }
+}
+
+const selectApplication = async (): Promise<
+  { appPath: null; isCancelled: true } | { appPath: string | null; isCancelled: false }
+> => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+    filters: [
+      {
+        name: 'Application',
+        extensions: ['app'],
+      },
+    ],
+  })
+
+  if (canceled) {
+    return {
+      appPath: null,
+      isCancelled: true,
+    }
+  }
+
+  if (!filePaths) {
+    return {
+      appPath: null,
+      isCancelled: false,
+    }
+  }
+
+  return {
+    appPath: filePaths[0],
+    isCancelled: false,
+  }
 }
 
 ipcMain.handle('requestSearch', (event, query: string) => {
@@ -70,13 +211,13 @@ ipcMain.handle('requestSearch', (event, query: string) => {
       }
     })
 
-  mainWindow.setSize(800, 752)
+  toggleMode('workbench-suggestion')
   mainWindow.webContents.send('responseSearch', suggestions)
 })
 
 ipcMain.handle('clearSearch', (_event) => {
   console.debug('RECEIVE MESSAGE: clearSearch')
-  mainWindow.setSize(800, 94)
+  toggleMode('workbench')
 })
 
 ipcMain.handle('writeClipboard', (event, text: string) => {
@@ -90,6 +231,102 @@ ipcMain.handle('requestDeactivate', () => {
   hideWindow()
 })
 
+ipcMain.handle('createNewKnowledge', async () => {
+  await createNewKnowledgeFile()
+})
+
+ipcMain.handle('exitPreference', () => {
+  console.debug('RECEIVE MESSAGE: exitPreference')
+  toggleMode('workbench')
+})
+
+ipcMain.handle('requestUserSettings', () => {
+  console.debug('RECEIVE MESSAGE: requestUserSettings')
+  mainWindow.webContents.send('responseUserSettings', currentSettings)
+})
+
+ipcMain.handle('requestSelectingDirectory', async () => {
+  try {
+    const { isCancelled, dirPath } = await selectDirectory()
+
+    if (!dirPath) {
+      mainWindow.webContents.send('responseSelectingDirectory', {
+        dirPath: null,
+        isValid: false,
+        isCancelled,
+      })
+      return
+    }
+
+    const store = new ElectronStore<Settings>()
+    store.set('knowledgeStoreDirectory', dirPath)
+
+    mainWindow.webContents.send('responseSelectingDirectory', {
+      dirPath: dirPath,
+      isValid: true,
+      isCancelled,
+    })
+  } catch (e) {
+    log.error(`An error occurred while selecting knowledge directory: ${e}`)
+    mainWindow.webContents.send('responseSelectingDirectory', {
+      dirPath: null,
+      isValid: false,
+      isCancelled: false,
+    })
+  }
+})
+
+ipcMain.handle('requestSelectingApplication', async () => {
+  try {
+    const { isCancelled, appPath } = await selectApplication()
+
+    if (!appPath) {
+      mainWindow.webContents.send('responseSelectingApplication', {
+        appPath: null,
+        isValid: false,
+        isCancelled,
+      })
+      return
+    }
+
+    const store = new ElectronStore<Settings>()
+    store.set('appForOpeningKnowledgeFile', appPath)
+
+    mainWindow.webContents.send('responseSelectingApplication', {
+      appPath: appPath,
+      isValid: true,
+      isCancelled,
+    })
+  } catch (e) {
+    log.error(`An error occurred while selecting knowledge application: ${e}`)
+    mainWindow.webContents.send('responseSelectingApplication', {
+      appPath: null,
+      isValid: false,
+      isCancelled: false,
+    })
+  }
+})
+
+ipcMain.handle('requestResetApplication', async () => {
+  try {
+    const store = new ElectronStore<Settings>()
+    store.set('appForOpeningKnowledgeFile', null)
+
+    mainWindow.webContents.send('responseResetApplication', {
+      isDone: true,
+      message: null,
+    })
+  } catch (e) {
+    log.error(`An error occurred while resetting knowledge application: ${e}`)
+    mainWindow.webContents.send('responseResetApplication', {
+      isDone: false,
+      message: e,
+    })
+  }
+})
+
+ipcMain.handle('requestNonce', () => nonce)
+
 const toggleWindow = () => {
   if (mainWindow.isVisible()) {
     hideWindow()
@@ -98,35 +335,18 @@ const toggleWindow = () => {
   }
 }
 
-const ensureDirectoryExists = async (dirPath: string) => {
-  let isFile = false
+const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
+  await ensureDirectoryExists(knowledgeStoreDirectoryPath)
 
-  try {
-    const stat = await fs.stat(dirPath)
-    if (stat.isFile()) {
-      isFile = true
-    }
-  } catch (error) {
-    await fs.mkdir(dirPath)
-  }
-
-  if (isFile) {
-    throw new Error('Specified path is file path')
-  }
-}
-
-const prepareUserData = async () => {
-  const userDataDir = app.getPath('userData')
-  const knowledgeDir = path.join(userDataDir, 'knowledge')
-
-  await ensureDirectoryExists(knowledgeDir)
-
-  const files = await fs.readdir(knowledgeDir, { withFileTypes: true })
+  const files = await fs.readdir(knowledgeStoreDirectoryPath, { withFileTypes: true })
   const markdownFiles = files.filter((file) => file.isFile() && file.name.endsWith('.md'))
 
   suggestItems = await Promise.all(
     markdownFiles.map(async (mdFile) => {
-      const fileText = await fs.readFile(path.join(knowledgeDir, mdFile.name), 'utf8')
+      const fileText = await fs.readFile(
+        path.join(knowledgeStoreDirectoryPath, mdFile.name),
+        'utf8'
+      )
       const parsedMd = marked.parse(fileText)
       const parsedHtml = parseHtml(parsedMd)
       return {
@@ -138,7 +358,19 @@ const prepareUserData = async () => {
 }
 
 app.whenReady().then(async () => {
-  await prepareUserData()
+  let store
+
+  try {
+    store = new ElectronStore<Settings>()
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      throw new ErrorReport('初期化中にエラーが発生しました。', e.message)
+    } else {
+      throw e
+    }
+  }
+
+  await prepareKnowledge(store.get('knowledgeStoreDirectory'))
   prepareSearchEngine(suggestItems)
 
   // 本番環境かつMacOSでの起動時、Dockにアイコンを表示させない
@@ -146,10 +378,21 @@ app.whenReady().then(async () => {
     app.dock.hide()
   }
 
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [`style-src 'self' 'nonce-${nonce}'; default-src 'self'`],
+      },
+    })
+  })
+
   // 通知領域に表示させるアイコンの設定
   tray = new Tray(treyIconPath)
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Toggle Knowledgebase', click: toggleWindow },
+    { type: 'separator' },
+    { label: 'Preference', click: () => toggleMode('preference') },
     { label: 'Quit', role: 'quit' },
   ])
   tray.setContextMenu(contextMenu)
@@ -160,8 +403,9 @@ app.whenReady().then(async () => {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 94,
+    backgroundColor: '#0092a5',
     resizable: false,
-    transparent: true,
+    transparent: false,
     frame: false,
     maximizable: false,
     webPreferences: {
@@ -197,5 +441,6 @@ app.whenReady().then(async () => {
 
 process.on('uncaughtException', (error) => {
   log.error(error)
+  dialog.showErrorBox('エラーが発生しました', error.message)
   app.quit()
 })
