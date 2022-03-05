@@ -1,4 +1,6 @@
-import React from 'react'
+import { faCheck, faExclamation } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React, { useCallback } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { css } from '../lib/emotion'
 
@@ -36,7 +38,6 @@ const style = {
     configItem: css({
       display: 'flex',
       flexDirection: 'row',
-      height: '50px',
     }),
     configItemDescription: css({
       minWidth: '200px',
@@ -46,21 +47,28 @@ const style = {
     }),
     configItemDefinition: css({
       display: 'flex',
-      flexDirection: 'row',
+      flexDirection: 'column',
       flex: 1,
       marginLeft: 0,
       overflow: 'hidden',
-      lineHeight: '50px',
+      lineHeight: '30px',
+      margin: '10px 0',
+    }),
+    configItemDefinitionRow: css({
+      display: 'flex',
+      alignItems: 'center',
+      margin: 0,
+      '&+&': {
+        marginTop: '5px',
+      },
     }),
     button: css({
-      display: 'flex',
-      margin: '8px 0',
-      alignItems: 'center',
       borderRadius: '5px',
       background: '#553a41',
       color: '#FFFFFF',
-      padding: '8px 12px',
+      padding: '0 10px',
       whiteSpace: 'nowrap',
+      fontSize: '12px',
 
       ':hover': {
         cursor: 'pointer',
@@ -69,6 +77,20 @@ const style = {
     }),
     input: css({
       margin: '5px 0',
+    }),
+    icon: css({
+      height: '20px',
+      paddingLeft: '10px',
+    }),
+    iconGood: css({
+      height: '20px',
+      paddingLeft: '10px',
+      color: '#07c307',
+    }),
+    iconAlert: css({
+      height: '20px',
+      paddingLeft: '10px',
+      color: '#c30707',
     }),
   },
 }
@@ -79,7 +101,18 @@ interface Props {
 }
 
 const PreferenceComponent: React.VFC<Props> = ({ onClickExit, onClickKnowledgeStoreDirInput }) => {
-  const { watch } = useFormContext()
+  const {
+    register,
+    watch,
+    formState: { errors, isValid, dirtyFields },
+  } = useFormContext()
+
+  const onKnowledgeStoreDirInputChange = useCallback((e) => {
+    console.log(e)
+  }, [])
+
+  console.log(dirtyFields)
+  console.log(errors)
 
   return (
     <div className={style.root}>
@@ -93,10 +126,28 @@ const PreferenceComponent: React.VFC<Props> = ({ onClickExit, onClickKnowledgeSt
           <div className={style.form.configItem}>
             <dt className={style.form.configItemDescription}>保存先</dt>
             <dd className={style.form.configItemDefinition}>
-              <button className={style.form.button} onClick={onClickKnowledgeStoreDirInput}>
-                選択
-              </button>
-              <span>{watch('knowledgeStoreDirectory')}</span>
+              <p className={style.form.configItemDefinitionRow}>
+                {watch('knowledgeStoreDirectory')}
+              </p>
+              <p className={style.form.configItemDefinitionRow}>
+                <span className={style.form.button} onClick={onClickKnowledgeStoreDirInput}>
+                  選択
+                </span>
+                {dirtyFields?.knowledgeStoreDirectory === true && (
+                  <FontAwesomeIcon
+                    icon={errors.knowledgeStoreDirectory ? faExclamation : faCheck}
+                    size='xs'
+                    className={
+                      errors.knowledgeStoreDirectory ? style.form.iconAlert : style.form.iconGood
+                    }
+                  />
+                )}
+                {errors.knowledgeStoreDirectory && (
+                  <span className='preference_form_configItem_error'>
+                    {errors.knowledgeStoreDirectory.message}
+                  </span>
+                )}
+              </p>
             </dd>
           </div>
 

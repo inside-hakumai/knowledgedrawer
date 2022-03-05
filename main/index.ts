@@ -2,6 +2,7 @@ import * as fs from 'fs/promises'
 import path from 'path'
 import electron from 'electron'
 import log from 'electron-log'
+import ElectronStore from 'electron-store'
 import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
 import open from 'open'
@@ -169,8 +170,31 @@ ipcMain.handle('requestUserSettings', () => {
 })
 
 ipcMain.handle('requestSelectingDirectory', async () => {
-  const dirPath = await selectDirectory()
-  mainWindow.webContents.send('responseSelectingDirectory', dirPath)
+  try {
+    const dirPath = await selectDirectory()
+
+    if (!dirPath) {
+      mainWindow.webContents.send('responseSelectingDirectory', {
+        dirPath: null,
+        isValid: false,
+      })
+      return
+    }
+
+    const store = new ElectronStore()
+    store.set('knowledgeStoreDirectory', dirPath)
+
+    mainWindow.webContents.send('responseSelectingDirectory', {
+      dirPath: dirPath,
+      isValid: true,
+    })
+  } catch (e) {
+    log.error(`An error occurred while selecting knowledge directory: ${e}`)
+    mainWindow.webContents.send('responseSelectingDirectory', {
+      dirPath: null,
+      isValid: false,
+    })
+  }
 })
 
 ipcMain.handle('requestNonce', () => nonce)

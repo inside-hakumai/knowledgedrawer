@@ -12,7 +12,7 @@ export const PreferenceContainer: React.VFC<Props> = ({ initialSettings }) => {
     defaultValues: initialSettings,
   })
 
-  const { setValue } = methods
+  const { setValue, setError } = methods
 
   const exitPreference = async () => {
     await window.api.exitPreference()
@@ -23,12 +23,18 @@ export const PreferenceContainer: React.VFC<Props> = ({ initialSettings }) => {
   }
 
   useEffect(() => {
-    window.api.onReceiveSelectingDirectory((dirPath: string) => {
-      setValue('knowledgeStoreDirectory', dirPath, {
-        shouldValidate: true,
-        shouldDirty: true,
-      })
-    })
+    window.api.onReceiveSelectingDirectory(
+      (result: { dirPath: string | null; isValid: boolean }) => {
+        if (result.isValid && result.dirPath) {
+          setValue('knowledgeStoreDirectory', result.dirPath, { shouldDirty: true })
+        } else {
+          setError('knowledgeStoreDirectory', {
+            type: 'manual',
+            message: 'エラーが発生しました',
+          })
+        }
+      }
+    )
   }, [])
 
   return (

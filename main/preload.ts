@@ -85,10 +85,15 @@ contextBridge.exposeInMainWorld('api', <IPCFunctions>{
   },
 
   onReceiveSelectingDirectory: (callback: Function) => {
-    ipcRenderer.on('responseSelectingDirectory', (event, dirPath) => {
-      console.debug('RECEIVE MESSAGE: responseSelectingDirectory, result:', dirPath)
-      callback(dirPath)
-    })
+    ipcRenderer.on(
+      'responseSelectingDirectory',
+      (event, result: { dirPath: string | null; isValid: boolean }) => {
+        const { dirPath } = result
+
+        console.debug('RECEIVE MESSAGE: responseSelectingDirectory, result:', dirPath)
+        callback(result)
+      }
+    )
   },
 
   requestNonce: () => ipcRenderer.invoke('requestNonce'),
