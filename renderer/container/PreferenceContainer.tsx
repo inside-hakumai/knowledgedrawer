@@ -24,10 +24,15 @@ export const PreferenceContainer: React.VFC<Props> = ({ initialSettings }) => {
 
   useEffect(() => {
     window.api.onReceiveSelectingDirectory(
-      (result: { dirPath: string | null; isValid: boolean }) => {
+      (result: { dirPath: string | null; isValid: boolean; isCancelled: boolean }) => {
+        if (result.isCancelled) {
+          return
+        }
+
         if (result.isValid && result.dirPath) {
           setValue('knowledgeStoreDirectory', result.dirPath, { shouldDirty: true })
         } else {
+          console.log(result)
           setError('knowledgeStoreDirectory', {
             type: 'manual',
             message: 'エラーが発生しました',

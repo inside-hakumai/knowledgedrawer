@@ -87,7 +87,7 @@ contextBridge.exposeInMainWorld('api', <IPCFunctions>{
   onReceiveSelectingDirectory: (callback: Function) => {
     ipcRenderer.on(
       'responseSelectingDirectory',
-      (event, result: { dirPath: string | null; isValid: boolean }) => {
+      (event, result: { dirPath: string | null; isValid: boolean; isCancelled: boolean }) => {
         const { dirPath } = result
 
         console.debug('RECEIVE MESSAGE: responseSelectingDirectory, result:', dirPath)

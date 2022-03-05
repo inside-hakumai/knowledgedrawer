@@ -112,16 +112,31 @@ const toggleMode = (mode: 'workbench' | 'workbench-suggestion' | 'preference') =
   }
 }
 
-const selectDirectory = async (): Promise<string | null> => {
+const selectDirectory = async (): Promise<
+  { dirPath: null; isCancelled: true } | { dirPath: string | null; isCancelled: false }
+> => {
   const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory'],
   })
 
-  if (canceled || !filePaths) {
-    return null
+  if (canceled) {
+    return {
+      dirPath: null,
+      isCancelled: true,
+    }
   }
 
-  return filePaths[0]
+  if (!filePaths) {
+    return {
+      dirPath: null,
+      isCancelled: false,
+    }
+  }
+
+  return {
+    dirPath: filePaths[0],
+    isCancelled: false,
+  }
 }
 
 ipcMain.handle('requestSearch', (event, query: string) => {
@@ -181,12 +196,13 @@ ipcMain.handle('requestUserSettings', () => {
 
 ipcMain.handle('requestSelectingDirectory', async () => {
   try {
-    const dirPath = await selectDirectory()
+    const { isCancelled, dirPath } = await selectDirectory()
 
     if (!dirPath) {
       mainWindow.webContents.send('responseSelectingDirectory', {
         dirPath: null,
         isValid: false,
+        isCancelled,
       })
       return
     }
@@ -197,12 +213,14 @@ ipcMain.handle('requestSelectingDirectory', async () => {
     mainWindow.webContents.send('responseSelectingDirectory', {
       dirPath: dirPath,
       isValid: true,
+      isCancelled,
     })
   } catch (e) {
     log.error(`An error occurred while selecting knowledge directory: ${e}`)
     mainWindow.webContents.send('responseSelectingDirectory', {
       dirPath: null,
       isValid: false,
+      isCancelled: false,
     })
   }
 })
