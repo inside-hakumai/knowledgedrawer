@@ -15,7 +15,7 @@ import {
   prepareSearchEngine,
   searchKnowledge,
 } from './lib/functions'
-import { loadUserSettings, Settings } from './lib/settings'
+import { Settings } from './lib/settings'
 
 const {
   BrowserWindow,
@@ -58,7 +58,7 @@ const nonce = Buffer.from(randomstring.generate()).toString('base64')
 
 let mainWindow: Electron.BrowserWindow
 let tray: electron.Tray | null = null
-let currentSettings: Settings | null = null
+const currentSettings: Settings | null = null
 let suggestItems: { title: string; contents: string }[] = []
 
 const hideWindow = () => {
@@ -79,11 +79,10 @@ const createNewKnowledgeFile = async () => {
     ? path.join(__dirname, '..', 'assets', 'template.md')
     : path.join(process.resourcesPath, 'assets', 'template.md')
 
-  const store = new ElectronStore()
-  const knowledgeDir = store.get('knowledgeStoreDirectory', null)
+  const store = new ElectronStore<Settings>()
+  const knowledgeDir = store.get('knowledgeStoreDirectory')
 
-  // noinspection SuspiciousTypeOfGuard
-  if (typeof knowledgeDir !== 'string' || !(await isDirectoryExists(knowledgeDir))) {
+  if (!(await isDirectoryExists(knowledgeDir))) {
     throw new Error(`Invalid knowledgeStoreDirectory setting: ${knowledgeDir}`)
   }
 
@@ -92,16 +91,21 @@ const createNewKnowledgeFile = async () => {
   await fs.copyFile(templateFilePath, destFilePath)
 
   const appForOpen = store.get('appForOpeningKnowledgeFile', null)
-  // noinspection SuspiciousTypeOfGuard
-  if (typeof appForOpen !== 'string' || !(await isExecutable(appForOpen))) {
+
+  if (appForOpen === null) {
+    await open(destFilePath)
+    log.info(`Open ${destFilePath} with system default application`)
+  } else if (!(await isExecutable(appForOpen))) {
     log.warn(`Invalid appForOpeningKnowledgeFile setting: ${appForOpen}`)
     await open(destFilePath)
+    log.info(`Open ${destFilePath} with system default application`)
   } else {
     await open(destFilePath, {
       app: {
         name: appForOpen,
       },
     })
+    log.info(`Open ${destFilePath} with ${appForOpen}`)
   }
 }
 
@@ -119,7 +123,8 @@ const toggleMode = (mode: 'workbench' | 'workbench-suggestion' | 'preference') =
   }
 
   if (mode === 'preference') {
-    mainWindow.webContents.send('toggleMode', mode, currentSettings)
+    const store = new ElectronStore<Settings>()
+    mainWindow.webContents.send('toggleMode', mode, store.store)
   } else {
     mainWindow.webContents.send('toggleMode', mode)
   }
@@ -253,7 +258,7 @@ ipcMain.handle('requestSelectingDirectory', async () => {
       return
     }
 
-    const store = new ElectronStore()
+    const store = new ElectronStore<Settings>()
     store.set('knowledgeStoreDirectory', dirPath)
 
     mainWindow.webContents.send('responseSelectingDirectory', {
@@ -284,7 +289,7 @@ ipcMain.handle('requestSelectingApplication', async () => {
       return
     }
 
-    const store = new ElectronStore()
+    const store = new ElectronStore<Settings>()
     store.set('appForOpeningKnowledgeFile', appPath)
 
     mainWindow.webContents.send('responseSelectingApplication', {
@@ -298,6 +303,24 @@ ipcMain.handle('requestSelectingApplication', async () => {
       appPath: null,
       isValid: false,
       isCancelled: false,
+    })
+  }
+})
+
+ipcMain.handle('requestResetApplication', async () => {
+  try {
+    const store = new ElectronStore<Settings>()
+    store.set('appForOpeningKnowledgeFile', null)
+
+    mainWindow.webContents.send('responseResetApplication', {
+      isDone: true,
+      message: null,
+    })
+  } catch (e) {
+    log.error(`An error occurred while resetting knowledge application: ${e}`)
+    mainWindow.webContents.send('responseResetApplication', {
+      isDone: false,
+      message: e,
     })
   }
 })
@@ -335,10 +358,10 @@ const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
 }
 
 app.whenReady().then(async () => {
-  const userDataDir = app.getPath('userData')
+  let store
 
   try {
-    currentSettings = await loadUserSettings(userDataDir)
+    store = new ElectronStore<Settings>()
   } catch (e: unknown) {
     if (e instanceof Error) {
       throw new ErrorReport('初期化中にエラーが発生しました。', e.message)
@@ -347,7 +370,7 @@ app.whenReady().then(async () => {
     }
   }
 
-  await prepareKnowledge(currentSettings.knowledgeStoreDirectory)
+  await prepareKnowledge(store.get('knowledgeStoreDirectory'))
   prepareSearchEngine(suggestItems)
 
   // 本番環境かつMacOSでの起動時、Dockにアイコンを表示させない

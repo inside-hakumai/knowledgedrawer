@@ -1,6 +1,6 @@
 import { faCheck, faExclamation } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback } from 'react'
+import React, { useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { css } from '../lib/emotion'
 
@@ -74,6 +74,10 @@ const style = {
         cursor: 'pointer',
         background: '#79535D',
       },
+
+      '& + &': {
+        marginLeft: '5px',
+      },
     }),
     input: css({
       margin: '5px 0',
@@ -101,12 +105,16 @@ interface Props {
   onClickAppForOpeningKnowledgeInput: (
     _event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => void
+  onClickResetAppForOpeningKnowledge: (
+    _event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => void
 }
 
 const PreferenceComponent: React.VFC<Props> = ({
   onClickExit,
   onClickKnowledgeStoreDirInput,
   onClickAppForOpeningKnowledgeInput,
+  onClickResetAppForOpeningKnowledge,
 }) => {
   const {
     register,
@@ -114,8 +122,10 @@ const PreferenceComponent: React.VFC<Props> = ({
     formState: { errors, isValid, dirtyFields },
   } = useFormContext()
 
-  const onKnowledgeStoreDirInputChange = useCallback((e) => {
-    console.log(e)
+  useEffect(() => {
+    return () => {
+      console.debug('Unmounting PreferenceComponent')
+    }
   }, [])
 
   return (
@@ -156,13 +166,6 @@ const PreferenceComponent: React.VFC<Props> = ({
           </div>
 
           <div className={style.form.configItem}>
-            <dt className={style.form.configItemDescription}>ホットキー</dt>
-            <dd className={style.form.configItemDefinition}>
-              <input className={style.form.input} type='text' value='Cmd + Alt + Space' />
-            </dd>
-          </div>
-
-          <div className={style.form.configItem}>
             <dt className={style.form.configItemDescription}>編集時に使用するアプリケーション</dt>
             <dd className={style.form.configItemDefinition}>
               <p className={style.form.configItemDefinitionRow}>
@@ -172,18 +175,21 @@ const PreferenceComponent: React.VFC<Props> = ({
                 <span className={style.form.button} onClick={onClickAppForOpeningKnowledgeInput}>
                   選択
                 </span>
-                {dirtyFields?.appForOpeningKnowledge === true && (
+                <span className={style.form.button} onClick={onClickResetAppForOpeningKnowledge}>
+                  デフォルトに戻す
+                </span>
+                {dirtyFields?.appForOpeningKnowledgeFile === true && (
                   <FontAwesomeIcon
-                    icon={errors.appForOpeningKnowledge ? faExclamation : faCheck}
+                    icon={errors.appForOpeningKnowledgeFile ? faExclamation : faCheck}
                     size='xs'
                     className={
-                      errors.appForOpeningKnowledge ? style.form.iconAlert : style.form.iconGood
+                      errors.appForOpeningKnowledgeFile ? style.form.iconAlert : style.form.iconGood
                     }
                   />
                 )}
-                {errors.appForOpeningKnowledge && (
+                {errors.appForOpeningKnowledgeFile && (
                   <span className='preference_form_configItem_error'>
-                    {errors.appForOpeningKnowledge.message}
+                    {errors.appForOpeningKnowledgeFile.message}
                   </span>
                 )}
               </p>

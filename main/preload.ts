@@ -114,4 +114,25 @@ contextBridge.exposeInMainWorld('api', <IPCFunctions>{
       }
     )
   },
+
+  requestResetApplication: async (): Promise<void> => {
+    console.debug('REQUEST MESSAGE: requestResetApplication')
+    await ipcRenderer.invoke('requestResetApplication')
+  },
+
+  onReceiveResetApplication: (callback: Function) => {
+    ipcRenderer.on(
+      'responseResetApplication',
+      (event, result: { isDone: boolean; message: string | null }) => {
+        console.debug('RECEIVE MESSAGE: responseResetApplication, result:', result)
+        callback(result)
+      }
+    )
+  },
+
+  removeAllListenersForPreference: () => {
+    ipcRenderer.removeAllListeners('responseSelectingDirectory')
+    ipcRenderer.removeAllListeners('responseSelectingApplication')
+    ipcRenderer.removeAllListeners('responseResetApplication')
+  },
 })

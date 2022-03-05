@@ -22,4 +22,7 @@ export interface IPCFunctions {
   requestNonce: () => Promise<string>
   requestSelectingApplication: () => Promise<void>
   onReceiveSelectingApplication: (callback: Function) => void
+  requestResetApplication: () => Promise<void>
+  onReceiveResetApplication: (callback: Function) => void
+  removeAllListenersForPreference: () => void
 }

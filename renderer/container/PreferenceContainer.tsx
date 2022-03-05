@@ -9,10 +9,10 @@ interface Props {
 
 export const PreferenceContainer: React.VFC<Props> = ({ initialSettings }) => {
   const methods = useForm<Settings>({
-    defaultValues: initialSettings,
+    shouldUnregister: false,
   })
 
-  const { setValue, setError } = methods
+  const { setValue, setError, unregister, reset } = methods
 
   const exitPreference = async () => {
     await window.api.exitPreference()
@@ -26,7 +26,21 @@ export const PreferenceContainer: React.VFC<Props> = ({ initialSettings }) => {
     await window.api.requestSelectingApplication()
   }
 
+  const requestResetApplication = async () => {
+    await window.api.requestResetApplication()
+  }
+
   useEffect(() => {
+    reset(initialSettings, {
+      keepErrors: false,
+      keepDirty: false,
+      keepValues: false,
+      keepDefaultValues: false,
+      keepIsSubmitted: false,
+      keepTouched: false,
+      keepIsValid: false,
+    })
+
     window.api.onReceiveSelectingDirectory(
       (result: { dirPath: string | null; isValid: boolean; isCancelled: boolean }) => {
         if (result.isCancelled) {
@@ -62,6 +76,31 @@ export const PreferenceContainer: React.VFC<Props> = ({ initialSettings }) => {
         }
       }
     )
+
+    window.api.onReceiveResetApplication((result: { isDone: boolean; message: string }) => {
+      if (result.isDone) {
+        setValue('appForOpeningKnowledgeFile', null, { shouldDirty: true })
+      } else {
+        console.debug(result)
+        setError('appForOpeningKnowledgeFile', {
+          type: 'manual',
+          message: 'エラーが発生しました',
+        })
+      }
+    })
+
+    return () => {
+      console.debug('Unmounting PreferenceContainer')
+      unregister(['knowledgeStoreDirectory', 'appForOpeningKnowledgeFile'], {
+        keepDirty: false,
+        keepTouched: false,
+        keepIsValid: false,
+        keepError: false,
+        keepValue: false,
+        keepDefaultValue: false,
+      })
+      window.api.removeAllListenersForPreference()
+    }
   }, [])
 
   return (
@@ -70,6 +109,7 @@ export const PreferenceContainer: React.VFC<Props> = ({ initialSettings }) => {
         onClickExit={exitPreference}
         onClickKnowledgeStoreDirInput={requestSelectingDirectory}
         onClickAppForOpeningKnowledgeInput={requestSelectingApplication}
+        onClickResetAppForOpeningKnowledge={requestResetApplication}
       />
     </FormProvider>
   )

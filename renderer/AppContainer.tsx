@@ -16,11 +16,13 @@ const AppContainer: React.VFC = () => {
         console.debug(`SET MODE: ${mode}`)
         setMode(mode)
 
-        if (mode === 'preference') {
-          setSettings(values)
-        }
+        setSettings(mode === 'preference' ? values : null)
       }
     )
+
+    return () => {
+      console.debug('Unmounting AppContainer')
+    }
   }, [])
 
   return (
