@@ -8,6 +8,9 @@ const preferenceWindowHeight = 542
 
 const style = {
   root: css({
+    fontSize: '12px',
+    fontWeight: 'bold',
+    '-webkit-font-smoothing': 'antialiased',
     paddingTop: '10px',
     height: `${preferenceWindowHeight - 16}px`,
   }),
