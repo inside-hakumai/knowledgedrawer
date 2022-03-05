@@ -1,3 +1,4 @@
+import { constants } from 'fs'
 import fs from 'fs/promises'
 import Fuse from 'fuse.js'
 
@@ -16,6 +17,15 @@ export const searchKnowledge = (query: string) => {
   }
 
   return fuse.search(query)
+}
+
+export const isExecutable = async (path: string) => {
+  try {
+    await fs.access(path, constants.X_OK)
+    return true
+  } catch (error) {
+    return false
+  }
 }
 
 export const isDirectoryExists = async (dirPath: string) => {

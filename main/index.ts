@@ -11,6 +11,7 @@ import { ErrorReport } from './lib/error'
 import {
   ensureDirectoryExists,
   isDirectoryExists,
+  isExecutable,
   prepareSearchEngine,
   searchKnowledge,
 } from './lib/functions'
@@ -89,7 +90,19 @@ const createNewKnowledgeFile = async () => {
   const destFilePath = path.join(knowledgeDir, `${Date.now()}.md`)
 
   await fs.copyFile(templateFilePath, destFilePath)
-  await open(destFilePath)
+
+  const appForOpen = store.get('appForOpeningKnowledgeFile', null)
+  // noinspection SuspiciousTypeOfGuard
+  if (typeof appForOpen !== 'string' || !(await isExecutable(appForOpen))) {
+    log.warn(`Invalid appForOpeningKnowledgeFile setting: ${appForOpen}`)
+    await open(destFilePath)
+  } else {
+    await open(destFilePath, {
+      app: {
+        name: appForOpen,
+      },
+    })
+  }
 }
 
 const toggleMode = (mode: 'workbench' | 'workbench-suggestion' | 'preference') => {
@@ -135,6 +148,39 @@ const selectDirectory = async (): Promise<
 
   return {
     dirPath: filePaths[0],
+    isCancelled: false,
+  }
+}
+
+const selectApplication = async (): Promise<
+  { appPath: null; isCancelled: true } | { appPath: string | null; isCancelled: false }
+> => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+    filters: [
+      {
+        name: 'Application',
+        extensions: ['app'],
+      },
+    ],
+  })
+
+  if (canceled) {
+    return {
+      appPath: null,
+      isCancelled: true,
+    }
+  }
+
+  if (!filePaths) {
+    return {
+      appPath: null,
+      isCancelled: false,
+    }
+  }
+
+  return {
+    appPath: filePaths[0],
     isCancelled: false,
   }
 }
@@ -219,6 +265,37 @@ ipcMain.handle('requestSelectingDirectory', async () => {
     log.error(`An error occurred while selecting knowledge directory: ${e}`)
     mainWindow.webContents.send('responseSelectingDirectory', {
       dirPath: null,
+      isValid: false,
+      isCancelled: false,
+    })
+  }
+})
+
+ipcMain.handle('requestSelectingApplication', async () => {
+  try {
+    const { isCancelled, appPath } = await selectApplication()
+
+    if (!appPath) {
+      mainWindow.webContents.send('responseSelectingApplication', {
+        appPath: null,
+        isValid: false,
+        isCancelled,
+      })
+      return
+    }
+
+    const store = new ElectronStore()
+    store.set('appForOpeningKnowledgeFile', appPath)
+
+    mainWindow.webContents.send('responseSelectingApplication', {
+      appPath: appPath,
+      isValid: true,
+      isCancelled,
+    })
+  } catch (e) {
+    log.error(`An error occurred while selecting knowledge application: ${e}`)
+    mainWindow.webContents.send('responseSelectingApplication', {
+      appPath: null,
       isValid: false,
       isCancelled: false,
     })

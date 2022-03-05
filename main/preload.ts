@@ -97,4 +97,21 @@ contextBridge.exposeInMainWorld('api', <IPCFunctions>{
   },
 
   requestNonce: () => ipcRenderer.invoke('requestNonce'),
+
+  requestSelectingApplication: async (): Promise<void> => {
+    console.debug('REQUEST MESSAGE: requestSelectingApplication')
+    await ipcRenderer.invoke('requestSelectingApplication')
+  },
+
+  onReceiveSelectingApplication: (callback: Function) => {
+    ipcRenderer.on(
+      'responseSelectingApplication',
+      (event, result: { appPath: string | null; isValid: boolean; isCancelled: boolean }) => {
+        const { appPath } = result
+
+        console.debug('RECEIVE MESSAGE: responseSelectingApplication, result:', appPath)
+        callback(result)
+      }
+    )
+  },
 })

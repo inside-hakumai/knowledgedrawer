@@ -22,6 +22,10 @@ export const PreferenceContainer: React.VFC<Props> = ({ initialSettings }) => {
     await window.api.requestSelectingDirectory()
   }
 
+  const requestSelectingApplication = async () => {
+    await window.api.requestSelectingApplication()
+  }
+
   useEffect(() => {
     window.api.onReceiveSelectingDirectory(
       (result: { dirPath: string | null; isValid: boolean; isCancelled: boolean }) => {
@@ -40,6 +44,24 @@ export const PreferenceContainer: React.VFC<Props> = ({ initialSettings }) => {
         }
       }
     )
+
+    window.api.onReceiveSelectingApplication(
+      (result: { appPath: string | null; isValid: boolean; isCancelled: boolean }) => {
+        if (result.isCancelled) {
+          return
+        }
+
+        if (result.isValid && result.appPath) {
+          setValue('appForOpeningKnowledgeFile', result.appPath, { shouldDirty: true })
+        } else {
+          console.log(result)
+          setError('appForOpeningKnowledgeFile', {
+            type: 'manual',
+            message: 'エラーが発生しました',
+          })
+        }
+      }
+    )
   }, [])
 
   return (
@@ -47,6 +69,7 @@ export const PreferenceContainer: React.VFC<Props> = ({ initialSettings }) => {
       <PreferenceComponent
         onClickExit={exitPreference}
         onClickKnowledgeStoreDirInput={requestSelectingDirectory}
+        onClickAppForOpeningKnowledgeInput={requestSelectingApplication}
       />
     </FormProvider>
   )

@@ -98,9 +98,16 @@ const style = {
 interface Props {
   onClickExit: () => void
   onClickKnowledgeStoreDirInput: (_event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
+  onClickAppForOpeningKnowledgeInput: (
+    _event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => void
 }
 
-const PreferenceComponent: React.VFC<Props> = ({ onClickExit, onClickKnowledgeStoreDirInput }) => {
+const PreferenceComponent: React.VFC<Props> = ({
+  onClickExit,
+  onClickKnowledgeStoreDirInput,
+  onClickAppForOpeningKnowledgeInput,
+}) => {
   const {
     register,
     watch,
@@ -110,9 +117,6 @@ const PreferenceComponent: React.VFC<Props> = ({ onClickExit, onClickKnowledgeSt
   const onKnowledgeStoreDirInputChange = useCallback((e) => {
     console.log(e)
   }, [])
-
-  console.log(dirtyFields)
-  console.log(errors)
 
   return (
     <div className={style.root}>
@@ -155,6 +159,34 @@ const PreferenceComponent: React.VFC<Props> = ({ onClickExit, onClickKnowledgeSt
             <dt className={style.form.configItemDescription}>ホットキー</dt>
             <dd className={style.form.configItemDefinition}>
               <input className={style.form.input} type='text' value='Cmd + Alt + Space' />
+            </dd>
+          </div>
+
+          <div className={style.form.configItem}>
+            <dt className={style.form.configItemDescription}>編集時に使用するアプリケーション</dt>
+            <dd className={style.form.configItemDefinition}>
+              <p className={style.form.configItemDefinitionRow}>
+                {watch('appForOpeningKnowledgeFile') || 'システムのデフォルト設定を使用'}
+              </p>
+              <p className={style.form.configItemDefinitionRow}>
+                <span className={style.form.button} onClick={onClickAppForOpeningKnowledgeInput}>
+                  選択
+                </span>
+                {dirtyFields?.appForOpeningKnowledge === true && (
+                  <FontAwesomeIcon
+                    icon={errors.appForOpeningKnowledge ? faExclamation : faCheck}
+                    size='xs'
+                    className={
+                      errors.appForOpeningKnowledge ? style.form.iconAlert : style.form.iconGood
+                    }
+                  />
+                )}
+                {errors.appForOpeningKnowledge && (
+                  <span className='preference_form_configItem_error'>
+                    {errors.appForOpeningKnowledge.message}
+                  </span>
+                )}
+              </p>
             </dd>
           </div>
         </dl>

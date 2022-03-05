@@ -20,4 +20,6 @@ export interface IPCFunctions {
   requestSelectingDirectory: () => Promise<void>
   onReceiveSelectingDirectory: (callback: Function) => void
   requestNonce: () => Promise<string>
+  requestSelectingApplication: () => Promise<void>
+  onReceiveSelectingApplication: (callback: Function) => void
 }

@@ -5,6 +5,7 @@ import { ensureDirectoryExists } from './functions'
 
 export interface Settings {
   knowledgeStoreDirectory: string
+  appForOpeningKnowledgeFile: string | null
 }
 
 const parseSettingsString = async (settingsJsonPath: string) => {
@@ -27,6 +28,7 @@ export const loadUserSettings = async (userDataDir: string): Promise<Settings> =
   const store = new ElectronStore({
     defaults: {
       knowledgeStoreDirectory: path.join(userDataDir, 'knowledge'),
+      appForOpeningKnowledgeFile: null,
     },
   })
 
