@@ -19,7 +19,7 @@ body {
 
   .wrapper {
     width: 100%;
-    background-color: #0092a5cf;
+    background-color: #303032;
     border-radius: 6px;
 
     &.wrapper-workbench {
@@ -42,7 +42,7 @@ body {
         height: $expandedWindowHeight;
 
         .formContainer {
-          border-bottom: 1px solid #00b2c9;
+          border-bottom: 1px solid #86868d;
 
           .buttons {
             i.fas:hover {
@@ -99,7 +99,7 @@ body {
         .suggestContainer {
           flex: 1;
           color: $baseFontColor;
-          border-right: 1px solid #00b2c9;
+          border-right: 1px solid #86868d;
 
           .suggestList {
             margin: 0;
@@ -125,8 +125,8 @@ body {
           p > code {
             padding: 2px 4px;
             font-size: 90%;
-            color: #000000;
-            background-color: #b2f6ff;
+            color: #adbac7;
+            background-color: #515156;
             border-radius: 4px;
 
           }

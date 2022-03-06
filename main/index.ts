@@ -403,7 +403,7 @@ app.whenReady().then(async () => {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 94,
-    backgroundColor: '#0092a5',
+    backgroundColor: '#303032',
     resizable: false,
     transparent: false,
     frame: false,

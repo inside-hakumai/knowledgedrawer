@@ -2,6 +2,7 @@ import { faCheck, faExclamation } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
+import templateStyle from '../lib/color'
 import { css } from '../lib/emotion'
 
 const preferenceWindowHeight = 542
@@ -65,18 +66,11 @@ const style = {
         marginTop: '5px',
       },
     }),
-    button: css({
+    button: css(templateStyle.button, {
       borderRadius: '5px',
-      background: '#553a41',
-      color: '#FFFFFF',
       padding: '0 10px',
       whiteSpace: 'nowrap',
       fontSize: '12px',
-
-      ':hover': {
-        cursor: 'pointer',
-        background: '#79535D',
-      },
 
       '& + &': {
         marginLeft: '5px',
