@@ -5,7 +5,7 @@ export interface IPCFunctions {
   search: (query: string) => Promise<string[]>
   clearSearch: () => Promise<void>
   onReceiveSuggestions: (
-    callback: (suggestions: { title: string; contents: string }[]) => void
+    callback: (suggestions: { id: number; title: string; contents: string }[]) => void
   ) => void
   writeClipboard: (text: string) => Promise<void>
   onDoneWriteClipboard: (callback: () => void) => void
@@ -25,4 +25,5 @@ export interface IPCFunctions {
   requestResetApplication: () => Promise<void>
   onReceiveResetApplication: (callback: Function) => void
   removeAllListenersForPreference: () => void
+  showContextMenuToEditKnowledge: (knowledgeId: number) => Promise<void>
 }

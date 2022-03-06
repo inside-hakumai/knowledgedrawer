@@ -1,10 +1,16 @@
 import { constants } from 'fs'
 import fs from 'fs/promises'
+import log from 'electron-log'
+import ElectronStore from 'electron-store'
 import Fuse from 'fuse.js'
+import open from 'open'
+import { Settings } from './settings'
 
-let fuse: Fuse<{ title: string; contents: string }> | null = null
+let fuse: Fuse<{ id: number; title: string; contents: string }> | null = null
 
-export const prepareSearchEngine = (collection: { title: string; contents: string }[]) => {
+export const prepareSearchEngine = (
+  collection: { id: number; title: string; contents: string }[]
+) => {
   fuse = new Fuse(collection, {
     includeScore: true,
     keys: ['title', 'contents'],
@@ -51,5 +57,26 @@ export const ensureDirectoryExists = async (dirPath: string) => {
 
   if (isFile) {
     throw new Error('Specified path is file path')
+  }
+}
+
+export const openKnowledgeFile = async (filePath: string) => {
+  const store = new ElectronStore<Settings>()
+  const appForOpen = store.get('appForOpeningKnowledgeFile', null)
+
+  if (appForOpen === null) {
+    await open(filePath)
+    log.info(`Open ${filePath} with system default application`)
+  } else if (!(await isExecutable(appForOpen))) {
+    log.warn(`Invalid appForOpeningKnowledgeFile setting: ${appForOpen}`)
+    await open(filePath)
+    log.info(`Open ${filePath} with system default application`)
+  } else {
+    await open(filePath, {
+      app: {
+        name: appForOpen,
+      },
+    })
+    log.info(`Open ${filePath} with ${appForOpen}`)
   }
 }

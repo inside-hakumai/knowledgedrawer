@@ -1,8 +1,28 @@
 import React, { useEffect, useRef, useState } from 'react'
 import 'highlight.js/styles/github-dark-dimmed.css'
+import SearchFormComponent from '../components/SearchFormComponent'
+import SuggestionListComponent from '../components/SuggestionListComponent'
 import KnowledgeViewContainer from '../container/KnowledgeViewContainer'
 import useActiveComponentManager from '../hooks/useActiveComponentManager'
+import { css } from '../lib/emotion'
 import { mapKeyToAction } from '../lib/functions'
+import { defaultWindowHeight, expandedWindowHeight } from '../lib/style'
+
+const rootStyle = css`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: ${defaultWindowHeight}px;
+
+  &.isDirty {
+    height: ${expandedWindowHeight}px;
+  }
+`
+
+const resultWrapperStyle = css`
+  display: flex;
+  height: 100%;
+`
 
 const WorkbenchContainer: React.VFC = () => {
   const { registerEventHandler, changeActiveComponent, activeComponent } =
@@ -10,11 +30,11 @@ const WorkbenchContainer: React.VFC = () => {
 
   const [isDirty, setIsDirty] = useState(false)
   const [suggestions, setSuggestions] = useState<{
-    items: { title: string; contents: string }[]
-    selectedIndex: number | null
+    items: { id: number; title: string; contents: string }[]
+    selectedItemIndex: number | null
   }>({
     items: [],
-    selectedIndex: null,
+    selectedItemIndex: null,
   })
 
   const suggestionsRef = useRef<typeof suggestions>(suggestions)
@@ -27,14 +47,14 @@ const WorkbenchContainer: React.VFC = () => {
     setIsDirty(false)
     setSuggestions({
       items: [],
-      selectedIndex: null,
+      selectedItemIndex: null,
     })
   }
 
-  const setResult = (suggestions: { title: string; contents: string }[]) => {
+  const setResult = (suggestions: { id: number; title: string; contents: string }[]) => {
     setSuggestions({
       items: suggestions,
-      selectedIndex: suggestions.length > 0 ? 0 : null,
+      selectedItemIndex: suggestions.length > 0 ? 0 : null,
     })
   }
 
@@ -52,7 +72,7 @@ const WorkbenchContainer: React.VFC = () => {
       setIsDirty(false)
       setSuggestions({
         items: [],
-        selectedIndex: null,
+        selectedItemIndex: null,
       })
       formRef.current!.value = ''
     }
@@ -81,7 +101,7 @@ const WorkbenchContainer: React.VFC = () => {
       return
     }
 
-    if (currentSuggestions.selectedIndex === null) {
+    if (currentSuggestions.selectedItemIndex === null) {
       return
     }
 
@@ -97,16 +117,17 @@ const WorkbenchContainer: React.VFC = () => {
 
     if (
       (triggeredAction === 'ArrowDown' &&
-        currentSuggestions.selectedIndex === currentSuggestions.items.length - 1) ||
-      (triggeredAction === 'ArrowUp' && currentSuggestions.selectedIndex === 0)
+        currentSuggestions.selectedItemIndex === currentSuggestions.items.length - 1) ||
+      (triggeredAction === 'ArrowUp' && currentSuggestions.selectedItemIndex === 0)
     ) {
       return
     }
 
-    const nextIndex = currentSuggestions.selectedIndex + (triggeredAction === 'ArrowDown' ? 1 : -1)
+    const nextIndex =
+      currentSuggestions.selectedItemIndex + (triggeredAction === 'ArrowDown' ? 1 : -1)
     setSuggestions({
       items: currentSuggestions.items,
-      selectedIndex: nextIndex,
+      selectedItemIndex: nextIndex,
     })
     console.debug('Selected item:', nextIndex)
   }
@@ -140,38 +161,24 @@ const WorkbenchContainer: React.VFC = () => {
   }, [])
 
   return (
-    <div className={`workbench ${isDirty ? 'isDirty' : ''}`}>
-      <div className='formContainer'>
-        <input className='queryForm' type='text' onChange={onFormChange} ref={formRef} />
-        <div className='buttons'>
-          <i className='fas fa-plus' onClick={window.api.createNewKnowledge} />
-        </div>
-      </div>
+    <div className={`${rootStyle} ${isDirty ? 'isDirty' : ''}`}>
+      <SearchFormComponent
+        onFormChange={onFormChange}
+        formRef={formRef}
+        createNewKnowledge={window.api.createNewKnowledge}
+        isDirty={isDirty}
+      />
 
       {isDirty && (
-        <div className='result'>
-          <div className='suggestContainer'>
-            <ul className='suggestList'>
-              {suggestions.items.map((item, index) => (
-                <li
-                  key={`suggest-${index}`}
-                  className={`suggestList-item ${
-                    suggestions.selectedIndex === index ? 'selected' : ''
-                  }`}
-                >
-                  {item.title}
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className={resultWrapperStyle}>
+          <SuggestionListComponent suggestions={suggestions} />
 
-          <KnowledgeViewContainer
-            renderingContent={
-              suggestions.selectedIndex !== null
-                ? suggestions.items[suggestions.selectedIndex].contents
-                : null
-            }
-          />
+          {suggestions.selectedItemIndex !== null && (
+            <KnowledgeViewContainer
+              knowledgeId={suggestions.items[suggestions.selectedItemIndex].id}
+              renderingContent={suggestions.items[suggestions.selectedItemIndex].contents}
+            />
+          )}
         </div>
       )}
     </div>

@@ -4,10 +4,11 @@ import useActiveComponentManager from '../hooks/useActiveComponentManager'
 import { mapKeyToAction } from '../lib/functions'
 
 interface Props {
-  renderingContent: string | null
+  knowledgeId: number
+  renderingContent: string
 }
 
-const KnowledgeViewContainer: React.VFC<Props> = ({ renderingContent }) => {
+const KnowledgeViewContainer: React.VFC<Props> = ({ knowledgeId, renderingContent }) => {
   const { registerEventHandler, changeActiveComponent, activeComponent } =
     useActiveComponentManager()
 
@@ -42,6 +43,10 @@ const KnowledgeViewContainer: React.VFC<Props> = ({ renderingContent }) => {
     } else {
       await window.api.writeClipboard(selectedCode.textContent)
     }
+  }
+
+  const showContextMenuToEditKnowledge = async () => {
+    await window.api.showContextMenuToEditKnowledge(knowledgeId)
   }
 
   const handleKeyDown = async (event: React.KeyboardEvent) => {
@@ -102,7 +107,7 @@ const KnowledgeViewContainer: React.VFC<Props> = ({ renderingContent }) => {
   }, [])
 
   useEffect(() => {
-    if (renderingContent !== null && renderingAreaRef.current !== null) {
+    if (renderingAreaRef.current !== null) {
       setCodeBlockSourcePosList(
         Array.from(renderingAreaRef.current!.querySelectorAll('pre'))
           .map((e) => e.getAttribute('data-sourcepos'))
@@ -116,24 +121,23 @@ const KnowledgeViewContainer: React.VFC<Props> = ({ renderingContent }) => {
       console.debug('Active => KnowledgeView')
       // document.addEventListener('keydown', handleKeyDown, false)
 
-      rootDivRef.current!.focus()
+      renderingAreaRef.current!.focus()
       setSelectedCodeBlockIndex(0)
     }
   }, [activeComponent])
 
   return (
-    <div className='contentsContainer' ref={rootDivRef}>
-      <KnowledgeViewComponent
-        ref={renderingAreaRef}
-        renderingContent={renderingContent}
-        focusedCodeBlockSourcePos={
-          selectedCodeBlockIndex !== null && codeBlockSourcePosList !== null
-            ? codeBlockSourcePosList[selectedCodeBlockIndex]
-            : null
-        }
-        isCopiedCode={isCopiedCode}
-      />
-    </div>
+    <KnowledgeViewComponent
+      ref={renderingAreaRef}
+      renderingContent={renderingContent}
+      focusedCodeBlockSourcePos={
+        selectedCodeBlockIndex !== null && codeBlockSourcePosList !== null
+          ? codeBlockSourcePosList[selectedCodeBlockIndex]
+          : null
+      }
+      isCopiedCode={isCopiedCode}
+      showContextMenuToEditKnowledge={showContextMenuToEditKnowledge}
+    />
   )
 }
 
