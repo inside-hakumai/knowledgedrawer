@@ -2,7 +2,7 @@ import { faCheck, faExclamation } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
-import templateStyle from '../lib/color'
+import templateStyle, { dividerColor } from '../lib/color'
 import { css } from '../lib/emotion'
 
 const preferenceWindowHeight = 542
@@ -42,12 +42,16 @@ const style = {
     configItem: css({
       display: 'flex',
       flexDirection: 'row',
+
+      '& + &': {
+        borderTop: `1px solid ${dividerColor}`,
+      },
     }),
     configItemDescription: css({
       minWidth: '200px',
-      paddingRight: '10px',
+      paddingRight: '20px',
       textAlign: 'right',
-      lineHeight: '50px',
+      lineHeight: '70px',
     }),
     configItemDefinition: css({
       display: 'flex',
@@ -56,15 +60,24 @@ const style = {
       marginLeft: 0,
       overflow: 'hidden',
       lineHeight: '30px',
-      margin: '10px 0',
+      margin: '20px 0',
+
+      '& > *': {
+        margin: '0',
+      },
+      '& > *:not(:last-child)': {
+        marginBottom: '10px',
+      },
     }),
     configItemDefinitionRow: css({
       display: 'flex',
       alignItems: 'center',
       margin: 0,
-      '&+&': {
-        marginTop: '5px',
-      },
+    }),
+    configItemDefinitionInputRow: css({
+      border: '1px solid #86868D',
+      borderRadius: '5px',
+      paddingLeft: '10px',
     }),
     button: css(templateStyle.button, {
       borderRadius: '5px',
@@ -137,7 +150,7 @@ const PreferenceComponent: React.VFC<Props> = ({
           <div className={style.form.configItem}>
             <dt className={style.form.configItemDescription}>保存先</dt>
             <dd className={style.form.configItemDefinition}>
-              <p className={style.form.configItemDefinitionRow}>
+              <p className={style.form.configItemDefinitionInputRow}>
                 {watch('knowledgeStoreDirectory')}
               </p>
               <p className={style.form.configItemDefinitionRow}>
@@ -165,7 +178,7 @@ const PreferenceComponent: React.VFC<Props> = ({
           <div className={style.form.configItem}>
             <dt className={style.form.configItemDescription}>編集時に使用するアプリケーション</dt>
             <dd className={style.form.configItemDefinition}>
-              <p className={style.form.configItemDefinitionRow}>
+              <p className={style.form.configItemDefinitionInputRow}>
                 {watch('appForOpeningKnowledgeFile') || 'システムのデフォルト設定を使用'}
               </p>
               <p className={style.form.configItemDefinitionRow}>

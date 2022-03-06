@@ -1,5 +1,7 @@
 import { css } from './emotion'
 
+export const dividerColor = '#86868D'
+
 const templateStyle = {
   button: css({
     background: '#0092CA',
@@ -11,7 +13,7 @@ const templateStyle = {
     },
   }),
   divider: css({
-    border: '1px solid #BDBDBD',
+    border: `1px solid ${dividerColor}`,
   }),
 }
 
