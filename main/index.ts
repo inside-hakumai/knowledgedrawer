@@ -392,7 +392,11 @@ app.whenReady().then(async () => {
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Toggle Knowledgebase', click: toggleWindow },
     { type: 'separator' },
-    { label: 'Preference', click: () => toggleMode('preference') },
+    {
+      label: 'Preference',
+      accelerator: 'CommandOrControl+,',
+      click: () => toggleMode('preference'),
+    },
     { label: 'Quit', role: 'quit' },
   ])
   tray.setContextMenu(contextMenu)
@@ -426,16 +430,23 @@ app.whenReady().then(async () => {
     mainWindow.webContents.openDevTools({ mode: 'detach', activate: false })
   }
 
-  globalShortcut.register('Alt+Command+Space', () => {
-    toggleWindow()
-  })
-
   await mainWindow.loadFile('build/index.html')
 
+  // ショートカットキーの設定
+  globalShortcut.register('CommandOrControl+Shift+K', toggleWindow)
+  globalShortcut.register('CommandOrControl+,', () => toggleMode('preference'))
+
+  app.on('browser-window-focus', () => {
+    log.debug('Event: browser-window-focus')
+    globalShortcut.register('CommandOrControl+,', () => toggleMode('preference'))
+  })
+
   app.on('browser-window-blur', () => {
+    log.debug('Event: browser-window-blur')
     if (mainWindow.isVisible()) {
       hideWindow()
     }
+    globalShortcut.unregister('CommandOrControl+,')
   })
 })
 
