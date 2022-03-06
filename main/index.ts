@@ -5,13 +5,12 @@ import log from 'electron-log'
 import ElectronStore from 'electron-store'
 import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
-import open from 'open'
 import randomstring from 'randomstring'
 import { ErrorReport } from './lib/error'
 import {
   ensureDirectoryExists,
   isDirectoryExists,
-  isExecutable,
+  openKnowledgeFile,
   prepareSearchEngine,
   searchKnowledge,
 } from './lib/functions'
@@ -59,7 +58,7 @@ const nonce = Buffer.from(randomstring.generate()).toString('base64')
 let mainWindow: Electron.BrowserWindow
 let tray: electron.Tray | null = null
 const currentSettings: Settings | null = null
-let suggestItems: { title: string; contents: string }[] = []
+let suggestItems: { id: number; title: string; contents: string; fileName: string }[] = []
 
 const hideWindow = () => {
   if (isDisabledDeactivation) {
@@ -90,23 +89,7 @@ const createNewKnowledgeFile = async () => {
 
   await fs.copyFile(templateFilePath, destFilePath)
 
-  const appForOpen = store.get('appForOpeningKnowledgeFile', null)
-
-  if (appForOpen === null) {
-    await open(destFilePath)
-    log.info(`Open ${destFilePath} with system default application`)
-  } else if (!(await isExecutable(appForOpen))) {
-    log.warn(`Invalid appForOpeningKnowledgeFile setting: ${appForOpen}`)
-    await open(destFilePath)
-    log.info(`Open ${destFilePath} with system default application`)
-  } else {
-    await open(destFilePath, {
-      app: {
-        name: appForOpen,
-      },
-    })
-    log.info(`Open ${destFilePath} with ${appForOpen}`)
-  }
+  openKnowledgeFile(destFilePath)
 }
 
 const toggleMode = (mode: 'workbench' | 'workbench-suggestion' | 'preference') => {
@@ -206,6 +189,7 @@ ipcMain.handle('requestSearch', (event, query: string) => {
     })
     .map((item) => {
       return {
+        id: item.item.id,
         title: item.item.title,
         contents: item.item.contents,
       }
@@ -327,6 +311,26 @@ ipcMain.handle('requestResetApplication', async () => {
 
 ipcMain.handle('requestNonce', () => nonce)
 
+ipcMain.handle('showContextMenuToEditKnowledge', async (_event, knowledgeId: number) => {
+  console.debug(`RECEIVE MESSAGE: showContextMenuToEditKnowledge id: ${knowledgeId}`)
+  const template = [
+    {
+      label: 'このナレッジを編集する',
+      click: () => {
+        const targetKnowledgeFile = suggestItems.filter((item) => item.id === knowledgeId)[0]
+        const store = new ElectronStore<Settings>()
+        openKnowledgeFile(
+          path.join(store.get('knowledgeStoreDirectory'), targetKnowledgeFile.fileName)
+        )
+      },
+    },
+  ]
+  const menu = Menu.buildFromTemplate(template)
+  menu.popup({
+    window: mainWindow,
+  })
+})
+
 const toggleWindow = () => {
   if (mainWindow.isVisible()) {
     hideWindow()
@@ -342,7 +346,7 @@ const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
   const markdownFiles = files.filter((file) => file.isFile() && file.name.endsWith('.md'))
 
   suggestItems = await Promise.all(
-    markdownFiles.map(async (mdFile) => {
+    markdownFiles.map(async (mdFile, index) => {
       const fileText = await fs.readFile(
         path.join(knowledgeStoreDirectoryPath, mdFile.name),
         'utf8'
@@ -350,8 +354,10 @@ const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
       const parsedMd = marked.parse(fileText)
       const parsedHtml = parseHtml(parsedMd)
       return {
+        id: index,
         title: parsedHtml.getElementsByTagName('h1')[0].text,
         contents: fileText,
+        fileName: mdFile.name,
       }
     })
   )

@@ -5,7 +5,12 @@ import { PreferenceContainer } from './container/PreferenceContainer'
 import WorkbenchContainer from './container/WorkbenchContainer'
 import { ActiveComponentManagerContainer } from './hooks/useActiveComponentManager'
 import { css } from './lib/emotion'
-import { defaultWindowHeight, expandedWindowHeight, preferenceWindowHeight } from './lib/style'
+import {
+  backgroundColor,
+  defaultWindowHeight,
+  expandedWindowHeight,
+  preferenceWindowHeight,
+} from './lib/style'
 
 const rootStyle = css`
   overflow: hidden;
@@ -14,7 +19,7 @@ const rootStyle = css`
 
 const wrapperStyle = css`
   width: 100%;
-  background-color: #303032;
+  background-color: ${backgroundColor};
   border-radius: 6px;
 
   &.wrapper-workbench {

@@ -135,4 +135,8 @@ contextBridge.exposeInMainWorld('api', <IPCFunctions>{
     ipcRenderer.removeAllListeners('responseSelectingApplication')
     ipcRenderer.removeAllListeners('responseResetApplication')
   },
+
+  showContextMenuToEditKnowledge: async (knowledgeId: number): Promise<void> => {
+    await ipcRenderer.invoke('showContextMenuToEditKnowledge', knowledgeId)
+  },
 })

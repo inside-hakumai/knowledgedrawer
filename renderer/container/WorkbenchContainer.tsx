@@ -9,6 +9,8 @@ import { mapKeyToAction } from '../lib/functions'
 import { defaultWindowHeight, expandedWindowHeight } from '../lib/style'
 
 const rootStyle = css`
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: ${defaultWindowHeight}px;
 
@@ -28,7 +30,7 @@ const WorkbenchContainer: React.VFC = () => {
 
   const [isDirty, setIsDirty] = useState(false)
   const [suggestions, setSuggestions] = useState<{
-    items: { title: string; contents: string }[]
+    items: { id: number; title: string; contents: string }[]
     selectedItemIndex: number | null
   }>({
     items: [],
@@ -49,7 +51,7 @@ const WorkbenchContainer: React.VFC = () => {
     })
   }
 
-  const setResult = (suggestions: { title: string; contents: string }[]) => {
+  const setResult = (suggestions: { id: number; title: string; contents: string }[]) => {
     setSuggestions({
       items: suggestions,
       selectedItemIndex: suggestions.length > 0 ? 0 : null,
@@ -171,13 +173,12 @@ const WorkbenchContainer: React.VFC = () => {
         <div className={resultWrapperStyle}>
           <SuggestionListComponent suggestions={suggestions} />
 
-          <KnowledgeViewContainer
-            renderingContent={
-              suggestions.selectedItemIndex !== null
-                ? suggestions.items[suggestions.selectedItemIndex].contents
-                : null
-            }
-          />
+          {suggestions.selectedItemIndex !== null && (
+            <KnowledgeViewContainer
+              knowledgeId={suggestions.items[suggestions.selectedItemIndex].id}
+              renderingContent={suggestions.items[suggestions.selectedItemIndex].contents}
+            />
+          )}
         </div>
       )}
     </div>
