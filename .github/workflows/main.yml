@@ -6,6 +6,25 @@ on:
       - 'v*'
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v1
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check license of dependant libraries
+        run: |
+          npm run check-license
+
   release:
     runs-on: ${{ matrix.os }}
 

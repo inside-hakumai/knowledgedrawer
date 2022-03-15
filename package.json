@@ -21,10 +21,11 @@
     "dist": "run-s dist:*",
     "dist:mac": "electron-builder --macos",
     "dist:windows": "electron-builder --win",
-    "dist:linux": "electron-builder --linux"
+    "dist:linux": "electron-builder --linux",
+    "check-license": "license-checker --failOn \"GPL;GPL-2.0;GPL-3.0;LGPL;LGPL-3.0\" --summary"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@emotion/css": "^11.7.1",
     "@emotion/react": "^11.8.1",
@@ -80,6 +81,7 @@
     "eslint-plugin-unused-imports": "^2.0.0",
     "html-webpack-plugin": "^5.5.0",
     "husky": "^7.0.4",
+    "license-checker": "^25.0.1",
     "lint-staged": "^12.3.5",
     "mini-css-extract-plugin": "^2.6.0",
     "npm-run-all": "^4.1.5",
