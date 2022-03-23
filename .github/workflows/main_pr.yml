@@ -1,4 +1,4 @@
-name: Build/release
+name: Check PR
 
 on: 
   pull_request:
@@ -50,7 +50,25 @@ jobs:
             exit 0
           fi
 
-  check:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: |
+          npm run test
+
+  check-license:
     runs-on: ubuntu-latest
 
     steps:
@@ -69,8 +87,9 @@ jobs:
         run: |
           npm run check-license
 
-  release:
+  package:
     runs-on: ${{ matrix.os }}
+    needs: [ensure-version-updated, test, check-license]
 
     strategy:
       matrix:
@@ -93,7 +112,3 @@ jobs:
           # GitHub token, automatically provided to the action
           # (No need to define this secret in the repo settings)
           github_token: ${{ secrets.github_token }}
-
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
