@@ -1,11 +1,55 @@
 name: Build/release
 
 on: 
-  push:
-    tags:
-      - 'v*'
+  pull_request:
+    branches:
+      - main
 
 jobs:
+  ensure-version-updated:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install required libraries
+        run: |
+          sudo apt install -y jq 
+
+      - name: Check out compare branch version
+        uses: actions/checkout@v3
+
+      - name: Extract version from package.json of compare branch version
+        id: get-compare-version
+        run: |
+          cat package.json | jq -r '.version' > compare_version.txt
+          echo "::set-output name=version::$(cat compare_version.txt)"
+
+      - name: Check out base branch version
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Extract version from package.json of base branch version
+        id: get-base-version
+        run: |
+          cat package.json | jq -r '.version' > base_version.txt
+          echo "::set-output name=version::$(cat base_version.txt)"
+
+      - name: Compare versions
+        run: |
+          BASE_VERSION=${{ steps.get-base-version.outputs.version }}
+          COMPARE_VERSION=${{ steps.get-compare-version.outputs.version }}
+          echo $BASE_VERSION
+          echo $COMPARE_VERSION
+          diff <(echo ${COMPARE_VERSION}) <(echo ${BASE_VERSION}) > result.txt || :
+          DIFF="$(cat result.txt)"
+          if [ "$DIFF" == "" ]; then
+            echo "version number is not updated: ${BASE_VERSION}"
+            exit 1
+          else
+            echo "version number is updated from ${BASE_VERSION} to ${COMPARE_VERSION}"
+            exit 0
+          fi
+
   check:
     runs-on: ubuntu-latest
 
