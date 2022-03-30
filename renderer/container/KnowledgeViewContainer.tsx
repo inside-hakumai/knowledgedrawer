@@ -19,7 +19,6 @@ const KnowledgeViewContainer: React.VFC<Props> = ({ knowledgeId, renderingConten
   const codeBlockSourcePosListRef = useRef<typeof codeBlockSourcePosList>(codeBlockSourcePosList)
   const selectedCodeBlockIndexRef = useRef<typeof selectedCodeBlockIndex>(selectedCodeBlockIndex)
 
-  const rootDivRef = useRef<HTMLDivElement>(null)
   const renderingAreaRef = useRef<HTMLDivElement>(null)
 
   const copyCode = async () => {

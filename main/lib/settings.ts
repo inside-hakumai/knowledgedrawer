@@ -1,36 +1,26 @@
-import fs from 'fs/promises'
 import path from 'path'
+import { app } from 'electron'
 import ElectronStore from 'electron-store'
-import { ensureDirectoryExists } from './functions'
+import { SettingProperties } from '../../@types/global'
 
-export interface Settings {
-  knowledgeStoreDirectory: string
-  appForOpeningKnowledgeFile: string | null
-}
-
-const parseSettingsString = async (settingsJsonPath: string) => {
-  const settingsRawString = await fs.readFile(settingsJsonPath, 'utf8')
-  const settings = JSON.parse(settingsRawString)
-
-  // if (settings.hasOwnProperty('fontSize')) {
-  //   const fontSize = settings.fontSize
-  //   if (fontSize < 8 || fontSize > 24) {
-  //     throw new Error('Invalid font size')
-  //   }
-  // }
-
-  return settings
-}
-
-export const loadUserSettings = async (userDataDir: string): Promise<Settings> => {
-  await ensureDirectoryExists(userDataDir)
-
-  const store = new ElectronStore({
+export const getSetting = (field: keyof SettingProperties): string | boolean | null => {
+  const store = new ElectronStore<SettingProperties>({
     defaults: {
-      knowledgeStoreDirectory: path.join(userDataDir, 'knowledge'),
+      knowledgeStoreDirectory: path.join(app.getPath('userData'), 'knowledge'),
       appForOpeningKnowledgeFile: null,
+      shouldShowTutorial: true,
     },
   })
+  return store.get(field)
+}
 
+export const getAllSettings = (): SettingProperties => {
+  const store = new ElectronStore<SettingProperties>({
+    defaults: {
+      knowledgeStoreDirectory: path.join(app.getPath('userData'), 'knowledge'),
+      appForOpeningKnowledgeFile: null,
+      shouldShowTutorial: true,
+    },
+  })
   return store.store
 }

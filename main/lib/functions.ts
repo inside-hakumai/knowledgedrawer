@@ -1,10 +1,9 @@
 import { constants } from 'fs'
 import fs from 'fs/promises'
 import log from 'electron-log'
-import ElectronStore from 'electron-store'
 import Fuse from 'fuse.js'
 import open from 'open'
-import { Settings } from './settings'
+import { getSetting } from './settings'
 
 let fuse: Fuse<{ id: number; title: string; contents: string }> | null = null
 
@@ -61,8 +60,11 @@ export const ensureDirectoryExists = async (dirPath: string) => {
 }
 
 export const openKnowledgeFile = async (filePath: string) => {
-  const store = new ElectronStore<Settings>()
-  const appForOpen = store.get('appForOpeningKnowledgeFile', null)
+  const appForOpen = getSetting('appForOpeningKnowledgeFile')
+
+  if (!(appForOpen === null || typeof appForOpen === 'string')) {
+    throw new Error('Invalid appForOpeningKnowledgeFile setting: ' + appForOpen)
+  }
 
   if (appForOpen === null) {
     await open(filePath)

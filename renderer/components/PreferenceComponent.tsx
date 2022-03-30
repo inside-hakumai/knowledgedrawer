@@ -127,9 +127,8 @@ const PreferenceComponent: React.VFC<Props> = ({
   onClickResetAppForOpeningKnowledge,
 }) => {
   const {
-    register,
     watch,
-    formState: { errors, isValid, dirtyFields },
+    formState: { errors, dirtyFields },
   } = useFormContext()
 
   useEffect(() => {

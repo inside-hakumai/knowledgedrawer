@@ -2,6 +2,10 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 import { IPCFunctions } from '../@types/preload'
 
 contextBridge.exposeInMainWorld('api', <IPCFunctions>{
+  ready: async (): Promise<void> => {
+    await ipcRenderer.invoke('ready')
+  },
+
   search: async (query: string): Promise<string[]> => {
     console.debug('REQUEST MESSAGE: requestSearch')
     return await ipcRenderer.invoke('requestSearch', query)
