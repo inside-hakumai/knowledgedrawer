@@ -9,6 +9,7 @@ export const getSetting = (field: keyof SettingProperties): string | boolean | n
       knowledgeStoreDirectory: path.join(app.getPath('userData'), 'knowledge'),
       appForOpeningKnowledgeFile: null,
       shouldShowTutorial: true,
+      isLaunchedPreviously: false,
     },
   })
   return store.get(field)
@@ -20,7 +21,11 @@ export const getAllSettings = (): SettingProperties => {
       knowledgeStoreDirectory: path.join(app.getPath('userData'), 'knowledge'),
       appForOpeningKnowledgeFile: null,
       shouldShowTutorial: true,
+      isLaunchedPreviously: false,
     },
   })
+
+  // TODO: ファイルから取得した設定値の妥当性を検証する
+
   return store.store
 }

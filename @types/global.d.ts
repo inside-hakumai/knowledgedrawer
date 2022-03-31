@@ -10,4 +10,5 @@ interface SettingProperties {
   knowledgeStoreDirectory: string
   appForOpeningKnowledgeFile: string | null
   shouldShowTutorial: boolean
+  isLaunchedPreviously: boolean
 }

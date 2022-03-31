@@ -9,6 +9,7 @@ import randomstring from 'randomstring'
 import { SettingProperties } from '../@types/global'
 import { ErrorReport } from './lib/error'
 import {
+  countKnowledge,
   ensureDirectoryExists,
   isDirectoryExists,
   openKnowledgeFile,
@@ -33,13 +34,17 @@ const {
 
 const isDevelopment = !app.isPackaged
 
-// 通知領域に表示させるアイコンの画像のパス
-let treyIconPath: string
-
 // ウィンドウを非表示にする挙動を無効にするかどうか（開発時に使用）
 const isDisabledDeactivation = isDevelopment && process.env.DISABLE_DEACTIVATION === 'true'
 
 const trayIconFileName = nativeTheme.shouldUseDarkColors ? 'trayIcon-dark.png' : 'trayIcon.png'
+
+const assetsDirPath = isDevelopment
+  ? path.join(__dirname, '..', 'assets')
+  : path.join(process.resourcesPath, 'assets')
+
+// 通知領域に表示させるアイコンの画像のパス
+const treyIconPath = path.join(assetsDirPath, trayIconFileName)
 
 if (isDevelopment) {
   require('electron-reload')(__dirname, {
@@ -48,8 +53,6 @@ if (isDevelopment) {
     hardResetMethod: 'exit',
   })
 
-  treyIconPath = path.join(__dirname, '..', 'assets', trayIconFileName)
-
   const isSandboxMode = process.env.SANDBOX_MODE === 'true'
   if (isSandboxMode) {
     log.debug('SANDBOX MODE IS ENABLED!')
@@ -57,7 +60,6 @@ if (isDevelopment) {
   }
 } else {
   Object.assign(console, log.functions)
-  treyIconPath = path.join(process.resourcesPath, 'assets', trayIconFileName)
 }
 
 const nonce = Buffer.from(randomstring.generate()).toString('base64')
@@ -370,8 +372,6 @@ const toggleWindow = () => {
 }
 
 const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
-  await ensureDirectoryExists(knowledgeStoreDirectoryPath)
-
   const files = await fs.readdir(knowledgeStoreDirectoryPath, { withFileTypes: true })
   const markdownFiles = files.filter((file) => file.isFile() && file.name.endsWith('.md'))
 
@@ -393,13 +393,32 @@ const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
   )
 }
 
+const putTutorialKnowledge = async (knowledgeStoreDirectoryPath: string) => {
+  const tutorialMarkdownDirPath = path.join(assetsDirPath, 'tutorial-md')
+  const files = await fs.readdir(tutorialMarkdownDirPath, { withFileTypes: true })
+  files
+    .filter((file) => file.isFile() && file.name.endsWith('.md'))
+    .forEach((file) => {
+      const src = path.join(tutorialMarkdownDirPath, file.name)
+      const dest = path.join(knowledgeStoreDirectoryPath, file.name)
+      fs.copyFile(src, dest)
+      log.info(`File copied: ${src} -> ${dest}`)
+    })
+}
+
 app.whenReady().then(async () => {
-  const knowledgeStoreDirectory = getSetting('knowledgeStoreDirectory')
-  if (typeof knowledgeStoreDirectory !== 'string') {
-    throw new ErrorReport('初期化中にエラーが発生しました。', '設定ファイルが不正です。')
+  const setting = getAllSettings()
+
+  await ensureDirectoryExists(setting.knowledgeStoreDirectory)
+
+  if (
+    !setting.isLaunchedPreviously &&
+    (await countKnowledge(setting.knowledgeStoreDirectory)) === 0
+  ) {
+    await putTutorialKnowledge(setting.knowledgeStoreDirectory)
   }
 
-  await prepareKnowledge(knowledgeStoreDirectory)
+  await prepareKnowledge(setting.knowledgeStoreDirectory)
   prepareSearchEngine(suggestItems)
 
   // 本番環境かつMacOSでの起動時、Dockにアイコンを表示させない

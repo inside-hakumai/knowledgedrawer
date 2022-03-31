@@ -59,6 +59,11 @@ export const ensureDirectoryExists = async (dirPath: string) => {
   }
 }
 
+export const countKnowledge = async (knowledgeStoreDirectoryPath: string): Promise<number> => {
+  const files = await fs.readdir(knowledgeStoreDirectoryPath, { withFileTypes: true })
+  return files.filter((file) => file.isFile() && file.name.endsWith('.md')).length
+}
+
 export const openKnowledgeFile = async (filePath: string) => {
   const appForOpen = getSetting('appForOpeningKnowledgeFile')
 
