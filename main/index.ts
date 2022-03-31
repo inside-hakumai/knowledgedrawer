@@ -62,6 +62,7 @@ if (isDevelopment) {
 
 const nonce = Buffer.from(randomstring.generate()).toString('base64')
 
+let currentAppMode: 'workbench' | 'workbench-suggestion' | 'preference' = 'workbench'
 let mainWindow: Electron.BrowserWindow
 let tray: electron.Tray | null = null
 const currentSettings: SettingProperties | null = null
@@ -121,6 +122,10 @@ const toggleMode = (mode: 'workbench' | 'workbench-suggestion' | 'preference') =
   if (mode === 'preference') {
     mainWindow.webContents.send('toggleMode', mode, getAllSettings())
   }
+
+  log.debug(`Toggled mode: ${currentAppMode} -> ${mode}`)
+
+  currentAppMode = mode
 }
 
 const selectDirectory = async (): Promise<
@@ -458,7 +463,7 @@ app.whenReady().then(async () => {
 
   app.on('browser-window-blur', () => {
     log.debug('Event: browser-window-blur')
-    if (mainWindow.isVisible()) {
+    if (mainWindow.isVisible() && currentAppMode !== 'preference') {
       hideWindow()
     }
     globalShortcut.unregister('CommandOrControl+,')
