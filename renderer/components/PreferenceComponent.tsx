@@ -71,6 +71,7 @@ const configItemContentsStyle = css`
 
 const configItemRowStyle = css`
   display: flex;
+  height: 30px;
   align-items: center;
   margin: 0;
 `
@@ -79,7 +80,9 @@ const configItemInputRowStyle = css`
   ${configItemRowStyle};
   border: 1px solid #86868d;
   border-radius: 5px;
-  padding-left: 10px;
+  padding: 0 10px;
+  overflow: scroll;
+  white-space: nowrap;
 `
 
 const buttonStyle = css`
