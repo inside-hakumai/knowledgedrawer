@@ -121,6 +121,10 @@ const toggleMode = (mode: 'workbench' | 'workbench-suggestion' | 'preference') =
   }
   if (mode === 'preference') {
     mainWindow.webContents.send('toggleMode', mode, getAllSettings())
+
+    if (!mainWindow.isVisible()) {
+      showWindow()
+    }
   }
 
   log.debug(`Toggled mode: ${currentAppMode} -> ${mode}`)
