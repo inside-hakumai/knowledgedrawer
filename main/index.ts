@@ -358,8 +358,13 @@ ipcMain.handle('showContextMenuToEditKnowledge', async (_event, knowledgeId: num
 
 const toggleWindow = () => {
   if (mainWindow.isVisible()) {
-    hideWindow()
+    if (currentAppMode === 'preference') {
+      toggleMode('workbench')
+    } else {
+      hideWindow()
+    }
   } else {
+    toggleMode('workbench')
     showWindow()
   }
 }
