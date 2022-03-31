@@ -49,6 +49,12 @@ if (isDevelopment) {
   })
 
   treyIconPath = path.join(__dirname, '..', 'assets', trayIconFileName)
+
+  const isSandboxMode = process.env.SANDBOX_MODE === 'true'
+  if (isSandboxMode) {
+    log.debug('SANDBOX MODE IS ENABLED!')
+    app.setPath('appData', path.join(__dirname, '..', 'appdata-dev'))
+  }
 } else {
   Object.assign(console, log.functions)
   treyIconPath = path.join(process.resourcesPath, 'assets', trayIconFileName)
