@@ -2,6 +2,7 @@
 import IpcRendererEvent = Electron.IpcRendererEvent
 
 export interface IPCFunctions {
+  ready: () => Promise<void>
   search: (query: string) => Promise<string[]>
   clearSearch: () => Promise<void>
   onReceiveSuggestions: (

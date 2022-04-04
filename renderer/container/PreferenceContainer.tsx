@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react'
 import { useForm, FormProvider } from 'react-hook-form'
-import type { Settings } from '../../main/lib/settings'
+import { SettingProperties } from '../../@types/global'
 import PreferenceComponent from '../components/PreferenceComponent'
 
 interface Props {
-  initialSettings: Settings
+  initialSettings: SettingProperties
 }
 
 export const PreferenceContainer: React.VFC<Props> = ({ initialSettings }) => {
-  const methods = useForm<Settings>({
+  const methods = useForm<SettingProperties>({
     shouldUnregister: false,
   })
 

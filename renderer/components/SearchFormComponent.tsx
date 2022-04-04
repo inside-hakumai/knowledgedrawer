@@ -51,6 +51,7 @@ interface Props {
   formRef: React.RefObject<HTMLInputElement>
   createNewKnowledge: () => void
   isDirty: boolean
+  shouldShowTutorial: boolean
 }
 
 const SearchFormComponent: React.VFC<Props> = ({
@@ -58,10 +59,17 @@ const SearchFormComponent: React.VFC<Props> = ({
   formRef,
   createNewKnowledge,
   isDirty,
+  shouldShowTutorial,
 }) => {
   return (
     <div className={`${rootStyle} ${isDirty ? 'isDirty' : ''}`}>
-      <input className={formInputStyle} type='text' onChange={onFormChange} ref={formRef} />
+      <input
+        className={formInputStyle}
+        type='text'
+        onChange={onFormChange}
+        ref={formRef}
+        placeholder={shouldShowTutorial ? 'ここに「使い方」と入力' : undefined}
+      />
       <div className={buttonsStyle}>
         <i className={`fas fa-plus ${buttonIconStyle}`} onClick={createNewKnowledge} />
       </div>

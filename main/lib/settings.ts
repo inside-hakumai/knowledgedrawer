@@ -1,36 +1,49 @@
-import fs from 'fs/promises'
 import path from 'path'
+import { app } from 'electron'
 import ElectronStore from 'electron-store'
-import { ensureDirectoryExists } from './functions'
+import { SettingProperties } from '../../@types/global'
 
-export interface Settings {
-  knowledgeStoreDirectory: string
-  appForOpeningKnowledgeFile: string | null
-}
-
-const parseSettingsString = async (settingsJsonPath: string) => {
-  const settingsRawString = await fs.readFile(settingsJsonPath, 'utf8')
-  const settings = JSON.parse(settingsRawString)
-
-  // if (settings.hasOwnProperty('fontSize')) {
-  //   const fontSize = settings.fontSize
-  //   if (fontSize < 8 || fontSize > 24) {
-  //     throw new Error('Invalid font size')
-  //   }
-  // }
-
-  return settings
-}
-
-export const loadUserSettings = async (userDataDir: string): Promise<Settings> => {
-  await ensureDirectoryExists(userDataDir)
-
-  const store = new ElectronStore({
+const getStore = (): ElectronStore<SettingProperties> => {
+  return new ElectronStore<SettingProperties>({
     defaults: {
-      knowledgeStoreDirectory: path.join(userDataDir, 'knowledge'),
+      knowledgeStoreDirectory: path.join(app.getPath('userData'), 'knowledge'),
       appForOpeningKnowledgeFile: null,
+      shouldShowTutorial: true,
+      isLaunchedPreviously: false,
     },
   })
+}
 
-  return store.store
+const isValidPropertyValue = (field: keyof SettingProperties, value: any): boolean => {
+  if (field === 'knowledgeStoreDirectory') {
+    return typeof value === 'string'
+  } else if (field === 'appForOpeningKnowledgeFile') {
+    return value === null || typeof value === 'string'
+  } else if (field === 'shouldShowTutorial') {
+    return typeof value === 'boolean'
+  } else if (field === 'isLaunchedPreviously') {
+    return typeof value === 'boolean'
+  } else {
+    throw new Error(`Unexpected property: ${field}`)
+  }
+}
+
+export const getSetting = (field: keyof SettingProperties): string | boolean | null => {
+  return getStore().get(field)
+}
+
+export const putSetting = (
+  field: keyof SettingProperties,
+  value: string | boolean | null
+): void => {
+  if (!isValidPropertyValue(field, getStore().get(field))) {
+    throw new Error(`Invalid property value for ${field}: ${value}`)
+  }
+
+  getStore().set(field, value)
+}
+
+export const getAllSettings = (): SettingProperties => {
+  // TODO: ファイルから取得した設定値の妥当性を検証する
+  return getStore().store
 }

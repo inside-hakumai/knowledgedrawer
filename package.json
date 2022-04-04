@@ -1,12 +1,14 @@
 {
   "name": "knowledgebase",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "main": "build/index.js",
   "scripts": {
     "predev": "rimraf build",
+    "predev-sandbox": "rimraf appdata-dev",
     "dev": "run-p dev:*",
     "dev-disable-deactication": "cross-env DISABLE_DEACTIVATION=\"true\" npm run dev",
+    "dev-sandbox": "cross-env SANDBOX_MODE=\"true\" npm run dev",
     "dev:start": "wait-on ./build/index.html && cross-env NODE_ENV=\"development\" electron .",
     "dev:compile": "tsc -w -p tsconfig.main.json",
     "dev:webpack": "cross-env TS_NODE_PROJECT=\"tsconfig.webpack.json\" webpack --watch --progress",

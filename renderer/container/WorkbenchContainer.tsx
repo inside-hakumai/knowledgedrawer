@@ -24,7 +24,11 @@ const resultWrapperStyle = css`
   height: 100%;
 `
 
-const WorkbenchContainer: React.VFC = () => {
+interface Props {
+  shouldShowTutorial: boolean
+}
+
+const WorkbenchContainer: React.VFC<Props> = ({ shouldShowTutorial }) => {
   const { registerEventHandler, changeActiveComponent, activeComponent } =
     useActiveComponentManager()
 
@@ -167,6 +171,7 @@ const WorkbenchContainer: React.VFC = () => {
         formRef={formRef}
         createNewKnowledge={window.api.createNewKnowledge}
         isDirty={isDirty}
+        shouldShowTutorial={shouldShowTutorial}
       />
 
       {isDirty && (

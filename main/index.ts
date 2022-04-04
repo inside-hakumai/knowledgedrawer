@@ -6,15 +6,18 @@ import ElectronStore from 'electron-store'
 import { marked } from 'marked'
 import { parse as parseHtml } from 'node-html-parser'
 import randomstring from 'randomstring'
+import { SettingProperties } from '../@types/global'
 import { ErrorReport } from './lib/error'
 import {
+  countKnowledge,
   ensureDirectoryExists,
   isDirectoryExists,
   openKnowledgeFile,
   prepareSearchEngine,
   searchKnowledge,
 } from './lib/functions'
-import { Settings } from './lib/settings'
+import { getAllSettings, getSetting, putSetting } from './lib/settings'
+import setOptions = marked.setOptions
 
 const {
   BrowserWindow,
@@ -32,13 +35,17 @@ const {
 
 const isDevelopment = !app.isPackaged
 
-// 通知領域に表示させるアイコンの画像のパス
-let treyIconPath: string
-
 // ウィンドウを非表示にする挙動を無効にするかどうか（開発時に使用）
 const isDisabledDeactivation = isDevelopment && process.env.DISABLE_DEACTIVATION === 'true'
 
 const trayIconFileName = nativeTheme.shouldUseDarkColors ? 'trayIcon-dark.png' : 'trayIcon.png'
+
+const assetsDirPath = isDevelopment
+  ? path.join(__dirname, '..', 'assets')
+  : path.join(process.resourcesPath, 'assets')
+
+// 通知領域に表示させるアイコンの画像のパス
+const treyIconPath = path.join(assetsDirPath, trayIconFileName)
 
 if (isDevelopment) {
   require('electron-reload')(__dirname, {
@@ -47,17 +54,21 @@ if (isDevelopment) {
     hardResetMethod: 'exit',
   })
 
-  treyIconPath = path.join(__dirname, '..', 'assets', trayIconFileName)
+  const isSandboxMode = process.env.SANDBOX_MODE === 'true'
+  if (isSandboxMode) {
+    log.debug('SANDBOX MODE IS ENABLED!')
+    app.setPath('appData', path.join(__dirname, '..', 'appdata-dev'))
+  }
 } else {
   Object.assign(console, log.functions)
-  treyIconPath = path.join(process.resourcesPath, 'assets', trayIconFileName)
 }
 
 const nonce = Buffer.from(randomstring.generate()).toString('base64')
 
+let currentAppMode: 'workbench' | 'workbench-suggestion' | 'preference' = 'workbench'
 let mainWindow: Electron.BrowserWindow
 let tray: electron.Tray | null = null
-const currentSettings: Settings | null = null
+const currentSettings: SettingProperties | null = null
 let suggestItems: { id: number; title: string; contents: string; fileName: string }[] = []
 
 const hideWindow = () => {
@@ -78,10 +89,9 @@ const createNewKnowledgeFile = async () => {
     ? path.join(__dirname, '..', 'assets', 'template.md')
     : path.join(process.resourcesPath, 'assets', 'template.md')
 
-  const store = new ElectronStore<Settings>()
-  const knowledgeDir = store.get('knowledgeStoreDirectory')
+  const knowledgeDir = getSetting('knowledgeStoreDirectory')
 
-  if (!(await isDirectoryExists(knowledgeDir))) {
+  if (!(typeof knowledgeDir === 'string' && (await isDirectoryExists(knowledgeDir)))) {
     throw new Error(`Invalid knowledgeStoreDirectory setting: ${knowledgeDir}`)
   }
 
@@ -105,12 +115,24 @@ const toggleMode = (mode: 'workbench' | 'workbench-suggestion' | 'preference') =
       break
   }
 
-  if (mode === 'preference') {
-    const store = new ElectronStore<Settings>()
-    mainWindow.webContents.send('toggleMode', mode, store.store)
-  } else {
-    mainWindow.webContents.send('toggleMode', mode)
+  if (mode === 'workbench' || mode === 'workbench-suggestion') {
+    const shouldShowTutorial = getSetting('shouldShowTutorial')
+    if (typeof shouldShowTutorial !== 'boolean') {
+      throw new ErrorReport('エラーが発生しました。', '設定ファイルが不正です。')
+    }
+    mainWindow.webContents.send('toggleMode', mode, shouldShowTutorial)
   }
+  if (mode === 'preference') {
+    mainWindow.webContents.send('toggleMode', mode, getAllSettings())
+
+    if (!mainWindow.isVisible()) {
+      showWindow()
+    }
+  }
+
+  log.debug(`Toggled mode: ${currentAppMode} -> ${mode}`)
+
+  currentAppMode = mode
 }
 
 const selectDirectory = async (): Promise<
@@ -173,8 +195,19 @@ const selectApplication = async (): Promise<
   }
 }
 
+ipcMain.handle('ready', () => {
+  console.debug('RECEIVE MESSAGE: ready')
+  toggleMode('workbench')
+})
+
 ipcMain.handle('requestSearch', (event, query: string) => {
   console.debug(`RECEIVE MESSAGE: requestSearch, QUERY: ${query}`)
+
+  if (query === '使い方') {
+    putSetting('shouldShowTutorial', false)
+    log.info('Setting changed: shouldShowTutorial => false')
+    toggleMode(currentAppMode)
+  }
 
   const suggestionResult = searchKnowledge(query)
   const suggestions = suggestionResult
@@ -242,7 +275,7 @@ ipcMain.handle('requestSelectingDirectory', async () => {
       return
     }
 
-    const store = new ElectronStore<Settings>()
+    const store = new ElectronStore<SettingProperties>()
     store.set('knowledgeStoreDirectory', dirPath)
 
     mainWindow.webContents.send('responseSelectingDirectory', {
@@ -273,7 +306,7 @@ ipcMain.handle('requestSelectingApplication', async () => {
       return
     }
 
-    const store = new ElectronStore<Settings>()
+    const store = new ElectronStore<SettingProperties>()
     store.set('appForOpeningKnowledgeFile', appPath)
 
     mainWindow.webContents.send('responseSelectingApplication', {
@@ -293,7 +326,7 @@ ipcMain.handle('requestSelectingApplication', async () => {
 
 ipcMain.handle('requestResetApplication', async () => {
   try {
-    const store = new ElectronStore<Settings>()
+    const store = new ElectronStore<SettingProperties>()
     store.set('appForOpeningKnowledgeFile', null)
 
     mainWindow.webContents.send('responseResetApplication', {
@@ -318,10 +351,11 @@ ipcMain.handle('showContextMenuToEditKnowledge', async (_event, knowledgeId: num
       label: 'このナレッジを編集する',
       click: () => {
         const targetKnowledgeFile = suggestItems.filter((item) => item.id === knowledgeId)[0]
-        const store = new ElectronStore<Settings>()
-        openKnowledgeFile(
-          path.join(store.get('knowledgeStoreDirectory'), targetKnowledgeFile.fileName)
-        )
+        const knowledgeStoreDirectory = getSetting('knowledgeStoreDirectory')
+        if (typeof knowledgeStoreDirectory !== 'string') {
+          throw new ErrorReport('エラーが発生しました。', '設定ファイルが不正です。')
+        }
+        openKnowledgeFile(path.join(knowledgeStoreDirectory, targetKnowledgeFile.fileName))
       },
     },
   ]
@@ -333,15 +367,18 @@ ipcMain.handle('showContextMenuToEditKnowledge', async (_event, knowledgeId: num
 
 const toggleWindow = () => {
   if (mainWindow.isVisible()) {
-    hideWindow()
+    if (currentAppMode === 'preference') {
+      toggleMode('workbench')
+    } else {
+      hideWindow()
+    }
   } else {
+    toggleMode('workbench')
     showWindow()
   }
 }
 
 const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
-  await ensureDirectoryExists(knowledgeStoreDirectoryPath)
-
   const files = await fs.readdir(knowledgeStoreDirectoryPath, { withFileTypes: true })
   const markdownFiles = files.filter((file) => file.isFile() && file.name.endsWith('.md'))
 
@@ -363,20 +400,32 @@ const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
   )
 }
 
-app.whenReady().then(async () => {
-  let store
+const putTutorialKnowledge = async (knowledgeStoreDirectoryPath: string) => {
+  const tutorialMarkdownDirPath = path.join(assetsDirPath, 'tutorial-md')
+  const files = await fs.readdir(tutorialMarkdownDirPath, { withFileTypes: true })
+  files
+    .filter((file) => file.isFile() && file.name.endsWith('.md'))
+    .forEach((file) => {
+      const src = path.join(tutorialMarkdownDirPath, file.name)
+      const dest = path.join(knowledgeStoreDirectoryPath, file.name)
+      fs.copyFile(src, dest)
+      log.info(`File copied: ${src} -> ${dest}`)
+    })
+}
 
-  try {
-    store = new ElectronStore<Settings>()
-  } catch (e: unknown) {
-    if (e instanceof Error) {
-      throw new ErrorReport('初期化中にエラーが発生しました。', e.message)
-    } else {
-      throw e
-    }
+app.whenReady().then(async () => {
+  const setting = getAllSettings()
+
+  await ensureDirectoryExists(setting.knowledgeStoreDirectory)
+
+  if (
+    !setting.isLaunchedPreviously &&
+    (await countKnowledge(setting.knowledgeStoreDirectory)) === 0
+  ) {
+    await putTutorialKnowledge(setting.knowledgeStoreDirectory)
   }
 
-  await prepareKnowledge(store.get('knowledgeStoreDirectory'))
+  await prepareKnowledge(setting.knowledgeStoreDirectory)
   prepareSearchEngine(suggestItems)
 
   // 本番環境かつMacOSでの起動時、Dockにアイコンを表示させない
@@ -439,7 +488,7 @@ app.whenReady().then(async () => {
   await mainWindow.loadFile('build/index.html')
 
   // ショートカットキーの設定
-  globalShortcut.register('CommandOrControl+Shift+K', toggleWindow)
+  globalShortcut.register('CommandOrControl+Alt+Space', toggleWindow)
   globalShortcut.register('CommandOrControl+,', () => toggleMode('preference'))
 
   app.on('browser-window-focus', () => {
@@ -449,7 +498,7 @@ app.whenReady().then(async () => {
 
   app.on('browser-window-blur', () => {
     log.debug('Event: browser-window-blur')
-    if (mainWindow.isVisible()) {
+    if (mainWindow.isVisible() && currentAppMode !== 'preference') {
       hideWindow()
     }
     globalShortcut.unregister('CommandOrControl+,')
