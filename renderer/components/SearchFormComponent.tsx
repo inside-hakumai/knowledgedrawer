@@ -59,6 +59,7 @@ const SearchFormComponent: React.VFC<Props> = ({
   formRef,
   createNewKnowledge,
   isDirty,
+  shouldShowTutorial,
 }) => {
   return (
     <div className={`${rootStyle} ${isDirty ? 'isDirty' : ''}`}>
@@ -67,7 +68,7 @@ const SearchFormComponent: React.VFC<Props> = ({
         type='text'
         onChange={onFormChange}
         ref={formRef}
-        placeholder='ここに「使い方」と入力'
+        placeholder={shouldShowTutorial ? 'ここに「使い方」と入力' : undefined}
       />
       <div className={buttonsStyle}>
         <i className={`fas fa-plus ${buttonIconStyle}`} onClick={createNewKnowledge} />

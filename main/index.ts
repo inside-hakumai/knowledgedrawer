@@ -16,7 +16,8 @@ import {
   prepareSearchEngine,
   searchKnowledge,
 } from './lib/functions'
-import { getAllSettings, getSetting } from './lib/settings'
+import { getAllSettings, getSetting, putSetting } from './lib/settings'
+import setOptions = marked.setOptions
 
 const {
   BrowserWindow,
@@ -201,6 +202,12 @@ ipcMain.handle('ready', () => {
 
 ipcMain.handle('requestSearch', (event, query: string) => {
   console.debug(`RECEIVE MESSAGE: requestSearch, QUERY: ${query}`)
+
+  if (query === '使い方') {
+    putSetting('shouldShowTutorial', false)
+    log.info('Setting changed: shouldShowTutorial => false')
+    toggleMode(currentAppMode)
+  }
 
   const suggestionResult = searchKnowledge(query)
   const suggestions = suggestionResult
