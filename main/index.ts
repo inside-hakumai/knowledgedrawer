@@ -70,6 +70,10 @@ let tray: electron.Tray | null = null
 const currentSettings: SettingProperties | null = null
 let suggestItems: { id: number; title: string; contents: string; fileName: string }[] = []
 
+/**
+ * 表示状態のアプリケーションを非表示にします。
+ * 開発時、dev-disable-deactivationスクリプトを使って起動した場合は非表示になりません。
+ */
 const hideWindow = () => {
   if (isDisabledDeactivation) {
     console.debug('Hiding window is requested but ignored because DISABLE_DEACTIVATION is "true"')
@@ -79,10 +83,16 @@ const hideWindow = () => {
   }
 }
 
+/**
+ * 非表示状態のアプリケーションを表示します。
+ */
 const showWindow = () => {
   mainWindow.show()
 }
 
+/**
+ * テンプレートをコピーしてナレッジファイルを新規に作成し、そのファイルを開きます。
+ */
 const createNewKnowledgeFile = async () => {
   const templateFilePath = isDevelopment
     ? path.join(__dirname, '..', 'assets', 'template.md')
@@ -95,12 +105,14 @@ const createNewKnowledgeFile = async () => {
   }
 
   const destFilePath = path.join(knowledgeDir, `${Date.now()}.md`)
-
   await fs.copyFile(templateFilePath, destFilePath)
-
-  openKnowledgeFile(destFilePath)
+  await openKnowledgeFile(destFilePath)
 }
 
+/**
+ * Appのモードを切り替えます。切り替えたモードに応じてウインドウサイズを変更します。
+ * @param mode 切り替え先のモード。
+ */
 const toggleMode = (mode: 'workbench' | 'workbench-suggestion' | 'preference') => {
   switch (mode) {
     case 'workbench':
@@ -134,6 +146,10 @@ const toggleMode = (mode: 'workbench' | 'workbench-suggestion' | 'preference') =
   currentAppMode = mode
 }
 
+/**
+ * OSの機能のディレクトリ選択ダイアログを使ってユーザーにディレクトリ選択を促し、選択されたディレクトリのパスを返します。
+ * @returns {object} 選択結果。キャンセルされた場合はdirPathがnullになり、isCancelledがtrueになります。
+ */
 const selectDirectory = async (): Promise<
   { dirPath: null; isCancelled: true } | { dirPath: string | null; isCancelled: false }
 > => {
@@ -161,6 +177,10 @@ const selectDirectory = async (): Promise<
   }
 }
 
+/**
+ * OSの機能のファイル選択ダイアログを使ってユーザーにアプリケーション選択を促し、選択されたアプリケーションのパスを返します。
+ * @returns {object} 選択結果。キャンセルされた場合はappPathがnullになり、isCancelledがtrueになります。
+ */
 const selectApplication = async (): Promise<
   { appPath: null; isCancelled: true } | { appPath: string | null; isCancelled: false }
 > => {
@@ -194,6 +214,57 @@ const selectApplication = async (): Promise<
   }
 }
 
+/**
+ * ウインドウの表示・非表示を切り替えます。
+ */
+const toggleWindow = () => {
+  if (mainWindow.isVisible()) {
+    if (currentAppMode === 'preference') {
+      toggleMode('workbench')
+    } else {
+      hideWindow()
+    }
+  } else {
+    toggleMode('workbench')
+    showWindow()
+  }
+}
+
+const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
+  const files = await fs.readdir(knowledgeStoreDirectoryPath, { withFileTypes: true })
+  const markdownFiles = files.filter((file) => file.isFile() && file.name.endsWith('.md'))
+
+  suggestItems = await Promise.all(
+    markdownFiles.map(async (mdFile, index) => {
+      const fileText = await fs.readFile(
+        path.join(knowledgeStoreDirectoryPath, mdFile.name),
+        'utf8'
+      )
+      const parsedMd = marked.parse(fileText)
+      const parsedHtml = parseHtml(parsedMd)
+      return {
+        id: index,
+        title: parsedHtml.getElementsByTagName('h1')[0].text,
+        contents: fileText,
+        fileName: mdFile.name,
+      }
+    })
+  )
+}
+
+const putTutorialKnowledge = async (knowledgeStoreDirectoryPath: string) => {
+  const tutorialMarkdownDirPath = path.join(assetsDirPath, 'tutorial-md')
+  const files = await fs.readdir(tutorialMarkdownDirPath, { withFileTypes: true })
+  files
+    .filter((file) => file.isFile() && file.name.endsWith('.md'))
+    .forEach((file) => {
+      const src = path.join(tutorialMarkdownDirPath, file.name)
+      const dest = path.join(knowledgeStoreDirectoryPath, file.name)
+      fs.copyFile(src, dest)
+      log.info(`File copied: ${src} -> ${dest}`)
+    })
+}
+
 ipcMain.handle('ready', () => {
   console.debug('RECEIVE MESSAGE: ready')
   toggleMode('workbench')
@@ -209,23 +280,23 @@ ipcMain.handle('requestSearch', (event, query: string) => {
   }
 
   const suggestionResult = searchKnowledge(query)
-  const suggestions = suggestionResult
-    .sort((a, b) => {
-      if (a.score! > b.score!) {
-        return -1
-      } else if (a.score! < b.score!) {
-        return 1
-      } else {
-        return 0
-      }
-    })
-    .map((item) => {
-      return {
-        id: item.item.id,
-        title: item.item.title,
-        contents: item.item.contents,
-      }
-    })
+  suggestionResult.sort((a, b) => {
+    if (a.score! > b.score!) {
+      return -1
+    } else if (a.score! < b.score!) {
+      return 1
+    } else {
+      return 0
+    }
+  })
+
+  const suggestions = suggestionResult.map((item) => {
+    return {
+      id: item.item.id,
+      title: item.item.title,
+      contents: item.item.contents,
+    }
+  })
 
   toggleMode('workbench-suggestion')
   mainWindow.webContents.send('responseSearch', suggestions)
@@ -363,54 +434,6 @@ ipcMain.handle('showContextMenuToEditKnowledge', async (_event, knowledgeId: num
     window: mainWindow,
   })
 })
-
-const toggleWindow = () => {
-  if (mainWindow.isVisible()) {
-    if (currentAppMode === 'preference') {
-      toggleMode('workbench')
-    } else {
-      hideWindow()
-    }
-  } else {
-    toggleMode('workbench')
-    showWindow()
-  }
-}
-
-const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
-  const files = await fs.readdir(knowledgeStoreDirectoryPath, { withFileTypes: true })
-  const markdownFiles = files.filter((file) => file.isFile() && file.name.endsWith('.md'))
-
-  suggestItems = await Promise.all(
-    markdownFiles.map(async (mdFile, index) => {
-      const fileText = await fs.readFile(
-        path.join(knowledgeStoreDirectoryPath, mdFile.name),
-        'utf8'
-      )
-      const parsedMd = marked.parse(fileText)
-      const parsedHtml = parseHtml(parsedMd)
-      return {
-        id: index,
-        title: parsedHtml.getElementsByTagName('h1')[0].text,
-        contents: fileText,
-        fileName: mdFile.name,
-      }
-    })
-  )
-}
-
-const putTutorialKnowledge = async (knowledgeStoreDirectoryPath: string) => {
-  const tutorialMarkdownDirPath = path.join(assetsDirPath, 'tutorial-md')
-  const files = await fs.readdir(tutorialMarkdownDirPath, { withFileTypes: true })
-  files
-    .filter((file) => file.isFile() && file.name.endsWith('.md'))
-    .forEach((file) => {
-      const src = path.join(tutorialMarkdownDirPath, file.name)
-      const dest = path.join(knowledgeStoreDirectoryPath, file.name)
-      fs.copyFile(src, dest)
-      log.info(`File copied: ${src} -> ${dest}`)
-    })
-}
 
 app.whenReady().then(async () => {
   const setting = getAllSettings()
