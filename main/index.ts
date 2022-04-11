@@ -17,7 +17,6 @@ import {
   searchKnowledge,
 } from './lib/functions'
 import { getAllSettings, getSetting, putSetting } from './lib/settings'
-import setOptions = marked.setOptions
 
 const {
   BrowserWindow,
