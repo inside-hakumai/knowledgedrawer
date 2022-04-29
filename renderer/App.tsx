@@ -4,7 +4,7 @@ import AppContainer from './AppContainer'
 import '@fortawesome/fontawesome-free/css/all.css'
 import { cache as emotionCache } from './lib/emotion'
 
-const App: React.VFC = () => {
+const App: React.FC = () => {
   return (
     <>
       {emotionCache && (

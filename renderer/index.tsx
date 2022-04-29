@@ -1,6 +1,8 @@
 import './style.scss'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import App from './App'
 
-// eslint-disable-next-line import/no-named-as-default-member
-ReactDOM.render(<App />, document.getElementById('root'))
+const container = document.getElementById('root')
+const root = createRoot(container!)
+
+root.render(<App />)

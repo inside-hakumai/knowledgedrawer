@@ -7,7 +7,7 @@ interface Props {
   initialSettings: SettingProperties
 }
 
-export const PreferenceContainer: React.VFC<Props> = ({ initialSettings }) => {
+export const PreferenceContainer: React.FC<Props> = ({ initialSettings }) => {
   const methods = useForm<SettingProperties>({
     shouldUnregister: false,
   })

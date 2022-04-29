@@ -28,7 +28,7 @@ interface Props {
   shouldShowTutorial: boolean
 }
 
-const WorkbenchContainer: React.VFC<Props> = ({ shouldShowTutorial }) => {
+const WorkbenchContainer: React.FC<Props> = ({ shouldShowTutorial }) => {
   const { registerEventHandler, changeActiveComponent, activeComponent } =
     useActiveComponentManager()
 
@@ -99,6 +99,8 @@ const WorkbenchContainer: React.VFC<Props> = ({ shouldShowTutorial }) => {
     console.debug('AppContainer', event.key)
 
     const currentSuggestions = suggestionsRef.current
+    console.debug(suggestionsRef, suggestionsRef.current)
+    console.debug(currentSuggestions)
 
     if (event.key === 'Escape') {
       await requestDeactivate()
@@ -137,6 +139,7 @@ const WorkbenchContainer: React.VFC<Props> = ({ shouldShowTutorial }) => {
   }
 
   useEffect(() => {
+    console.debug(suggestions, activeComponent)
     suggestionsRef.current = suggestions
     activeComponentRef.current = activeComponent
   })

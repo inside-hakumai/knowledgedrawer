@@ -8,7 +8,7 @@ interface Props {
   renderingContent: string
 }
 
-const KnowledgeViewContainer: React.VFC<Props> = ({ knowledgeId, renderingContent }) => {
+const KnowledgeViewContainer: React.FC<Props> = ({ knowledgeId, renderingContent }) => {
   const { registerEventHandler, changeActiveComponent, activeComponent } =
     useActiveComponentManager()
 
@@ -124,6 +124,9 @@ const KnowledgeViewContainer: React.VFC<Props> = ({ knowledgeId, renderingConten
       setSelectedCodeBlockIndex(0)
     }
   }, [activeComponent])
+
+  console.debug(codeBlockSourcePosListRef.current)
+  console.debug(selectedCodeBlockIndexRef.current)
 
   return (
     <KnowledgeViewComponent

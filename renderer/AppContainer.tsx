@@ -35,7 +35,7 @@ const wrapperStyle = css`
   }
 `
 
-const AppContainer: React.VFC = () => {
+const AppContainer: React.FC = () => {
   const [mode, setMode] = useState<'workbench' | 'workbench-suggestion' | 'preference'>('workbench')
 
   const [settings, setSettings] = useState<SettingProperties | null>(null)

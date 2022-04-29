@@ -69,6 +69,7 @@
         "react/prop-types": "off",
         "react/display-name": "off",
         "react/react-in-jsx-scope": "off",
-        "node/no-callback-literal": "off"
+        "node/no-callback-literal": "off",
+        "n/no-callback-literal": "off"
     }
 }
