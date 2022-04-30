@@ -125,9 +125,6 @@ const KnowledgeViewContainer: React.FC<Props> = ({ knowledgeId, renderingContent
     }
   }, [activeComponent])
 
-  console.debug(codeBlockSourcePosListRef.current)
-  console.debug(selectedCodeBlockIndexRef.current)
-
   return (
     <KnowledgeViewComponent
       ref={renderingAreaRef}
