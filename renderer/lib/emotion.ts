@@ -6,7 +6,7 @@ const nonce = await window.api.requestNonce()
 
 const cache: EmotionCache = createCache({
   key: 'kb-css',
-  nonce: nonce,
+  nonce,
 })
 
 const emotion: Emotion = createEmotion(cache)
