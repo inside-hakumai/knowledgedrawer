@@ -54,7 +54,7 @@ interface Props {
   shouldShowTutorial: boolean
 }
 
-const SearchFormComponent: React.VFC<Props> = ({
+const SearchFormComponent: React.FC<Props> = ({
   onFormChange,
   formRef,
   createNewKnowledge,

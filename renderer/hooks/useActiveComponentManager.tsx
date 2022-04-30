@@ -1,5 +1,9 @@
 import React, { useContext, createContext, useState } from 'react'
 
+interface Props {
+  children: React.ReactNode
+}
+
 const defaultHandler = () => {
   console.warn('EventHandler is not initialized')
 }
@@ -17,7 +21,7 @@ const ActiveComponentManagerContext = createContext<{
   activeComponent: null,
 })
 
-export const ActiveComponentManagerContainer: React.FC = ({ children }) => {
+export const ActiveComponentManagerContainer: React.FC<Props> = ({ children }) => {
   const [activeComponent, setActiveComponent] = useState<'searchResult' | 'knowledgeView' | null>(
     null
   )

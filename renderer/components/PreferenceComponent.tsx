@@ -123,7 +123,7 @@ interface Props {
   ) => void
 }
 
-const PreferenceComponent: React.VFC<Props> = ({
+const PreferenceComponent: React.FC<Props> = ({
   onClickExit,
   onClickKnowledgeStoreDirInput,
   onClickAppForOpeningKnowledgeInput,

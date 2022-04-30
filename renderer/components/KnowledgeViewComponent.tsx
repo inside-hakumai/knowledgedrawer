@@ -87,7 +87,7 @@ const editKnowledgeButtonStyle = css`
   }
 `
 
-const KnowledgeViewComponent: React.VFC<{
+const KnowledgeViewComponent: React.FC<{
   ref: Ref<HTMLDivElement>
   renderingContent: string | null
   focusedCodeBlockSourcePos: string | null
@@ -99,6 +99,8 @@ const KnowledgeViewComponent: React.VFC<{
       { renderingContent, focusedCodeBlockSourcePos, isCopiedCode, showContextMenuToEditKnowledge },
       ref
     ) => {
+      console.debug(focusedCodeBlockSourcePos)
+
       return (
         <div className={rootStyle}>
           <div className='contents' ref={ref}>
@@ -109,6 +111,7 @@ const KnowledgeViewComponent: React.VFC<{
                     const match = /language-(\w+)/.exec(className || '')
                     return !inline && match ? (
                       <SyntaxHighlighter
+                        // @ts-ignore
                         style={okaidia}
                         language={match[1]}
                         PreTag='div'
