@@ -45,6 +45,7 @@ const WorkbenchContainer: React.FC<Props> = ({ shouldShowTutorial }) => {
   const activeComponentRef = useRef<typeof activeComponent>(activeComponent)
 
   const formRef = useRef<HTMLInputElement>(null)
+  const isInCompositionRef = useRef(false)
 
   const clearResult = async () => {
     await window.api.clearSearch()
@@ -96,11 +97,21 @@ const WorkbenchContainer: React.FC<Props> = ({ shouldShowTutorial }) => {
   }
 
   const handleKeyDown = async (event: React.KeyboardEvent) => {
-    console.debug('AppContainer', event.key)
+    console.debug(
+      'AppContainer.handleKeyDown' + '\nPressed:',
+      event.key,
+      '\nsuggestionsRef:',
+      suggestionsRef.current,
+      '\nisInCompositionRef:',
+      isInCompositionRef.current
+    )
+
+    // IMEによる変換中は何もしない
+    if (isInCompositionRef.current) {
+      return
+    }
 
     const currentSuggestions = suggestionsRef.current
-    console.debug(suggestionsRef, suggestionsRef.current)
-    console.debug(currentSuggestions)
 
     if (event.key === 'Escape') {
       await requestDeactivate()
@@ -135,7 +146,8 @@ const WorkbenchContainer: React.FC<Props> = ({ shouldShowTutorial }) => {
       items: currentSuggestions.items,
       selectedItemIndex: nextIndex,
     })
-    console.debug('Selected item:', nextIndex)
+
+    console.debug('AppContainer.handleKeyDown' + '\nNew selected item:', nextIndex)
   }
 
   useEffect(() => {
@@ -175,6 +187,12 @@ const WorkbenchContainer: React.FC<Props> = ({ shouldShowTutorial }) => {
         createNewKnowledge={window.api.createNewKnowledge}
         isDirty={isDirty}
         shouldShowTutorial={shouldShowTutorial}
+        startComposition={() => {
+          isInCompositionRef.current = true
+        }}
+        endComposition={() => {
+          isInCompositionRef.current = false
+        }}
       />
 
       {isDirty && (

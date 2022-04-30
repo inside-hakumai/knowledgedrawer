@@ -52,6 +52,8 @@ interface Props {
   createNewKnowledge: () => void
   isDirty: boolean
   shouldShowTutorial: boolean
+  startComposition: () => void
+  endComposition: () => void
 }
 
 const SearchFormComponent: React.FC<Props> = ({
@@ -60,6 +62,8 @@ const SearchFormComponent: React.FC<Props> = ({
   createNewKnowledge,
   isDirty,
   shouldShowTutorial,
+  startComposition,
+  endComposition,
 }) => {
   return (
     <div className={`${rootStyle} ${isDirty ? 'isDirty' : ''}`}>
@@ -69,6 +73,8 @@ const SearchFormComponent: React.FC<Props> = ({
         onChange={onFormChange}
         ref={formRef}
         placeholder={shouldShowTutorial ? 'ここに「使い方」と入力' : undefined}
+        onCompositionStart={startComposition}
+        onCompositionEnd={endComposition}
       />
       <div className={buttonsStyle}>
         <i className={`fas fa-plus ${buttonIconStyle}`} onClick={createNewKnowledge} />

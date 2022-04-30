@@ -99,8 +99,6 @@ const KnowledgeViewComponent: React.FC<{
       { renderingContent, focusedCodeBlockSourcePos, isCopiedCode, showContextMenuToEditKnowledge },
       ref
     ) => {
-      console.debug(focusedCodeBlockSourcePos)
-
       return (
         <div className={rootStyle}>
           <div className='contents' ref={ref}>
