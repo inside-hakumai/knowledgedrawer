@@ -26,7 +26,7 @@
     "dist:linux": "electron-builder --linux",
     "check-license": "license-checker --failOn \"GPL;GPL-2.0;GPL-3.0;LGPL;LGPL-3.0\" --summary"
   },
-  "author": "",
+  "author": "inside-hakumai",
   "license": "MIT",
   "dependencies": {
     "@emotion/css": "^11.9.0",
@@ -69,8 +69,10 @@
     "babel-loader": "^8.2.5",
     "cross-env": "^7.0.3",
     "css-loader": "^6.7.1",
+    "dotenv": "^16.0.0",
     "electron": "^18.2.0",
     "electron-builder": "^23.0.3",
+    "electron-notarize": "^1.2.1",
     "electron-reload": "^2.0.0-alpha.1",
     "eslint": "^8.14.0",
     "eslint-config-prettier": "^8.5.0",
@@ -109,11 +111,16 @@
   },
   "build": {
     "appId": "dev.insidehakumai.knowledgebase",
+    "afterSign": "misc/notarize.js",
     "productName": "Knowledgebase",
     "files": [
       "build/**/*"
     ],
     "mac": {
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "misc/entitlements.mac.plist",
+      "entitlementsInherit": "misc/entitlements.mac.plist",
       "icon": "assets/icon.png",
       "publish": [
         "github"
@@ -130,6 +137,9 @@
       "publish": [
         "github"
       ]
+    },
+    "dmg": {
+      "sign": false
     },
     "extraResources": [
       "assets/**/*",
