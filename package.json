@@ -141,7 +141,8 @@
       "icon": "assets/icon.png",
       "publish": [
         "github"
-      ]
+      ],
+      "category": "Development"
     },
     "dmg": {
       "sign": false
