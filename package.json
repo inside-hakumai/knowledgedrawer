@@ -115,6 +115,7 @@
   },
   "build": {
     "appId": "dev.insidehakumai.knowledgebase",
+    "artifactName": "knowledgebase.${ext}",
     "afterSign": "misc/notarize.js",
     "productName": "Knowledgebase",
     "files": [
