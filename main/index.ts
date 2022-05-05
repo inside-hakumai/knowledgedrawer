@@ -349,7 +349,7 @@ ipcMain.handle('requestSelectingDirectory', async () => {
     store.set('knowledgeStoreDirectory', dirPath)
 
     mainWindow.webContents.send('responseSelectingDirectory', {
-      dirPath: dirPath,
+      dirPath,
       isValid: true,
       isCancelled,
     })
@@ -380,7 +380,7 @@ ipcMain.handle('requestSelectingApplication', async () => {
     store.set('appForOpeningKnowledgeFile', appPath)
 
     mainWindow.webContents.send('responseSelectingApplication', {
-      appPath: appPath,
+      appPath,
       isValid: true,
       isCancelled,
     })
