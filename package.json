@@ -1,8 +1,12 @@
 {
   "name": "knowledgebase",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "",
   "main": "build/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inside-hakumai/knowledgebase.git"
+  },
   "scripts": {
     "predev": "rimraf build",
     "predev-sandbox": "rimraf appdata-dev",
@@ -111,6 +115,7 @@
   },
   "build": {
     "appId": "dev.insidehakumai.knowledgebase",
+    "artifactName": "knowledgebase.${ext}",
     "afterSign": "misc/notarize.js",
     "productName": "Knowledgebase",
     "files": [
@@ -136,7 +141,8 @@
       "icon": "assets/icon.png",
       "publish": [
         "github"
-      ]
+      ],
+      "category": "Development"
     },
     "dmg": {
       "sign": false
