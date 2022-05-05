@@ -3,6 +3,10 @@
   "version": "0.0.6",
   "description": "",
   "main": "build/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inside-hakumai/knowledgebase.git"
+  },
   "scripts": {
     "predev": "rimraf build",
     "predev-sandbox": "rimraf appdata-dev",
