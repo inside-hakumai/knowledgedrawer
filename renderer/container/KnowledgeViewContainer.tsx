@@ -8,7 +8,7 @@ interface Props {
   renderingContent: string
 }
 
-const KnowledgeViewContainer: React.VFC<Props> = ({ knowledgeId, renderingContent }) => {
+const KnowledgeViewContainer: React.FC<Props> = ({ knowledgeId, renderingContent }) => {
   const { registerEventHandler, changeActiveComponent, activeComponent } =
     useActiveComponentManager()
 

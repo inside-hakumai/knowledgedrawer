@@ -31,7 +31,7 @@ interface Props {
   }
 }
 
-const SuggestionListComponent: React.VFC<Props> = ({ suggestions }) => {
+const SuggestionListComponent: React.FC<Props> = ({ suggestions }) => {
   return (
     <div className={rootStyle}>
       <ul className={suggestionListStyle}>

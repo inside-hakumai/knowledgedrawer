@@ -28,7 +28,7 @@ interface Props {
   shouldShowTutorial: boolean
 }
 
-const WorkbenchContainer: React.VFC<Props> = ({ shouldShowTutorial }) => {
+const WorkbenchContainer: React.FC<Props> = ({ shouldShowTutorial }) => {
   const { registerEventHandler, changeActiveComponent, activeComponent } =
     useActiveComponentManager()
 
@@ -45,6 +45,7 @@ const WorkbenchContainer: React.VFC<Props> = ({ shouldShowTutorial }) => {
   const activeComponentRef = useRef<typeof activeComponent>(activeComponent)
 
   const formRef = useRef<HTMLInputElement>(null)
+  const isInCompositionRef = useRef(false)
 
   const clearResult = async () => {
     await window.api.clearSearch()
@@ -96,7 +97,19 @@ const WorkbenchContainer: React.VFC<Props> = ({ shouldShowTutorial }) => {
   }
 
   const handleKeyDown = async (event: React.KeyboardEvent) => {
-    console.debug('AppContainer', event.key)
+    console.debug(
+      'AppContainer.handleKeyDown' + '\nPressed:',
+      event.key,
+      '\nsuggestionsRef:',
+      suggestionsRef.current,
+      '\nisInCompositionRef:',
+      isInCompositionRef.current
+    )
+
+    // IMEによる変換中は何もしない
+    if (isInCompositionRef.current) {
+      return
+    }
 
     const currentSuggestions = suggestionsRef.current
 
@@ -133,10 +146,12 @@ const WorkbenchContainer: React.VFC<Props> = ({ shouldShowTutorial }) => {
       items: currentSuggestions.items,
       selectedItemIndex: nextIndex,
     })
-    console.debug('Selected item:', nextIndex)
+
+    console.debug('AppContainer.handleKeyDown' + '\nNew selected item:', nextIndex)
   }
 
   useEffect(() => {
+    console.debug(suggestions, activeComponent)
     suggestionsRef.current = suggestions
     activeComponentRef.current = activeComponent
   })
@@ -172,6 +187,12 @@ const WorkbenchContainer: React.VFC<Props> = ({ shouldShowTutorial }) => {
         createNewKnowledge={window.api.createNewKnowledge}
         isDirty={isDirty}
         shouldShowTutorial={shouldShowTutorial}
+        startComposition={() => {
+          isInCompositionRef.current = true
+        }}
+        endComposition={() => {
+          isInCompositionRef.current = false
+        }}
       />
 
       {isDirty && (
