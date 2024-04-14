@@ -1,6 +1,5 @@
-const { app, BrowserWindow, ipcMain } = require('electron')
-
-const path = require('path')
+import { app, BrowserWindow, ipcMain } from 'electron'
+import path from 'path'
 
 const getPreloadScriptPath = () => {
   if (process.env.NODE_ENV === 'development') {
@@ -11,7 +10,7 @@ const getPreloadScriptPath = () => {
   }
 }
 
-let mainWindow
+let mainWindow: BrowserWindow | null
 
 const createWindow = async () => {
   mainWindow = new BrowserWindow({
@@ -19,7 +18,6 @@ const createWindow = async () => {
     height: 900,
     webPreferences: {
       contextIsolation: true,
-      enableRemoteModule: false,
       nodeIntegration: false,
       sandbox: true,
       // preload: getPreloadScriptPath()

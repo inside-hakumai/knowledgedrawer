@@ -8,8 +8,14 @@
     "url": "https://github.com/inside-hakumai/knowledgebase.git"
   },
   "scripts": {
-    "predev": "rimraf build",
-    "dev": "cross-env NODE_ENV=\"development\" concurrently --names \"renderer,main\" \"vite --mode development --port 51645 ./src/renderer\" \"electron ./src/main\""
+    "predev": "rimraf dev-out",
+    "dev": "cross-env NODE_ENV=\"development\" concurrently --names \"renderer,preload-transpile,main-transpile,main-run\" \"npm run dev:renderer\" \"npm run dev:preload-transpile\" \"npm run dev:main-transpile\" \"npm run dev:main-run\"",
+    "dev:renderer": "cross-env NODE_ENV=\"development\" vite --mode development --port 51645 ./src/renderer",
+    "dev:preload-transpile": "cross-env NODE_ENV=\"development\" esbuild ./src/preload/index.ts --bundle --platform=node --outfile=dev-out/preload.js --external:electron --watch",
+    "dev:main-transpile": "cross-env NODE_ENV=\"development\" esbuild ./src/main/index.ts --bundle --platform=node --outfile=dev-out/main.js --external:electron --watch",
+    "dev:main-run": "cross-env NODE_ENV=\"development\" wait-on ./dev-out/main.js ./dev-out/preload.js && electron ./dev-out/main.js",
+    "build:main": "esbuild ./src/main/index.ts --bundle --platform=node --outfile=out/main.js --external:electron",
+    "build:preload": "esbuild ./src/preload/index.js --bundle --platform=node --outfile=out/preload.js --external:electron"
   },
   "author": "inside-hakumai",
   "license": "MIT",
@@ -17,10 +23,13 @@
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
     "electron": "^29.3.0",
+    "esbuild": "^0.20.2",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "rimraf": "^5.0.5",
-    "vite": "^5.2.8"
+    "typescript": "^5.4.5",
+    "vite": "^5.2.8",
+    "wait-on": "^7.2.0"
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": [
@@ -66,5 +75,8 @@
       "!assets/icon.ai",
       "!assets/trayIcon.ai"
     ]
+  },
+  "engines": {
+    "node": "20.x"
   }
 }
