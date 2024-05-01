@@ -1,6 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 
+const isDevelopment = !app.isPackaged
+
 const getPreloadScriptPath = () => {
   if (process.env.NODE_ENV === 'development') {
     return path.join(__dirname, '..', 'preload', 'index.js')
@@ -35,7 +37,7 @@ const createWindow = async () => {
       mode: 'detach',
     })
   } else {
-    await mainWindow.loadFile('out/renderer/index.html')
+    await mainWindow.loadFile('renderer/index.html')
   }
 }
 
