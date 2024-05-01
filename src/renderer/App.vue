@@ -7,13 +7,13 @@ import RootFrame from './component/RootFrame.vue'
 </script>
 
 <style lang="scss">
-@import './variables.css';
+@import url('./variables.css');
 
 #root {
-  overflow: hidden;
-  outline: none;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  outline: none;
 }
 
 body {

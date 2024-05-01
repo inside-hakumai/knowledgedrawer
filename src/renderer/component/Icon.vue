@@ -59,10 +59,10 @@ const props = defineProps({
 
 <style lang="scss">
 .Icon {
+  position: relative;
   display: block;
   width: v-bind('size + "px"');
   height: v-bind('size + "px"');
-  position: relative;
 }
 
 .Icon__vector {

@@ -34,14 +34,14 @@ const emits = defineEmits<{ (event: 'click'): void }>()
 <style lang="scss" scoped>
 .IconButton {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   width: v-bind('buttonSize + "px"');
   height: v-bind('buttonSize + "px"');
   padding: 0;
-  border: none;
-  background: none;
   cursor: pointer;
+  background: none;
+  border: none;
   border-radius: 4px;
 
   &:hover {

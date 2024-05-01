@@ -56,10 +56,10 @@ watchEffect(async () => {
 
 .Detail__header {
   display: flex;
-  justify-content: space-between;
-  padding-right: 4px;
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
+  padding-right: 4px;
 }
 
 .Detail__title {
@@ -69,10 +69,10 @@ watchEffect(async () => {
 .Detail__contents {
   width: 100%;
   height: 100%;
-  overflow-y: auto;
-  margin: 0;
   padding: 0;
-  color: var(--color-text-normal);
+  margin: 0;
+  overflow-y: auto;
   font-size: 14px;
+  color: var(--color-text-normal);
 }
 </style>

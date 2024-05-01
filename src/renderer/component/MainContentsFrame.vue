@@ -11,9 +11,9 @@
 
 <style lang="scss" scoped>
 .MainContentsFrame {
-  width: 100%;
   display: flex;
   flex: 1;
+  width: 100%;
 }
 
 .MainContentsFrame__SearchResult {
@@ -22,18 +22,18 @@
 }
 
 .MainContentsFrame__Detail {
+  position: relative;
   flex: 1;
   height: 100%;
-  position: relative;
 
   &::before {
-    content: '';
+    position: absolute;
+    top: 50%;
     display: block;
     width: 1px;
     height: 500px;
+    content: '';
     background: var(--color-border);
-    position: absolute;
-    top: 50%;
     transform: translateY(-50%);
   }
 }

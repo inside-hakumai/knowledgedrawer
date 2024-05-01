@@ -33,16 +33,16 @@ import * as constants from '../../constants'
 }
 
 .SearchBarFrame__SearchBar {
-  -webkit-app-region: no-drag;
+  position: relative;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   width: 100%;
   height: 100%;
-  position: relative;
-  box-sizing: border-box;
+  background: rgb(255 255 255 / 30%);
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.3);
+  -webkit-app-region: no-drag;
 }
 
 .SearchBarFrame__SearchBarInputIcon {
@@ -53,9 +53,9 @@ import * as constants from '../../constants'
 .SearchBarFrame__SearchBarInput {
   width: 100%;
   height: 100%;
-  color: var(--color-text-normal);
-  font-size: var(--font-size-text-normal);
   padding: 0 40px;
+  font-size: var(--font-size-text-normal);
+  color: var(--color-text-normal);
   background: none;
   border: none;
   outline: none;
@@ -63,18 +63,18 @@ import * as constants from '../../constants'
 
 .SearchBarFrame__MatchCount {
   position: absolute;
+  right: 12px;
   font-size: 12px;
   color: var(--color-text-sub-l2);
-  right: 12px;
 }
 
 .SearchBarFrame__Actions {
-  -webkit-app-region: no-drag;
   position: absolute;
+  top: 50%;
+  right: 12px;
   display: flex;
   align-items: center;
-  right: 12px;
-  top: 50%;
   transform: translateY(-50%);
+  -webkit-app-region: no-drag;
 }
 </style>
