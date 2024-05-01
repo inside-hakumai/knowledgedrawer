@@ -1,8 +1,14 @@
+import 'reflect-metadata'
+import './diContainer'
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import { color } from '../constants'
+import { container } from 'tsyringe'
+import { KnowledgeStoreApplication } from './application/KnowledgeStore/KnowledgeStoreApplication'
 
-const isDevelopment = !app.isPackaged
+const knowledgeStoreApplication = container.resolve<KnowledgeStoreApplication>(
+  'KnowledgeStoreApplication',
+)
 
 const getPreloadScriptPath = () => {
   if (process.env.NODE_ENV === 'development') {
@@ -16,6 +22,8 @@ const getPreloadScriptPath = () => {
 let mainWindow: BrowserWindow | null
 
 const createWindow = async () => {
+  console.debug(await knowledgeStoreApplication.loadKnowledges())
+
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
