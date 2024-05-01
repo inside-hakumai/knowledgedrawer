@@ -1,0 +1,14 @@
+:root {
+    --color-text-normal: #2C363F;
+    --color-text-sub-l1: #333333;
+    --color-text-sub-l2: #666666;
+    --color-bg-l0: #F0F0F0;
+    --color-active: rgba(88,153,226,0.5);
+    --color-border: #C8C8C8;
+
+    --font-size-text-normal: 16px;
+    --font-size-text-searchResultItem: 12px;
+
+    --window-width-normal: 1000px;
+    --window-height-normal: 600px;
+}

@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
+import { color } from '../constants'
 
 const isDevelopment = !app.isPackaged
 
@@ -16,15 +17,19 @@ let mainWindow: BrowserWindow | null
 
 const createWindow = async () => {
   mainWindow = new BrowserWindow({
-    width: 1600,
-    height: 900,
+    width: 1000,
+    height: 600,
+    backgroundColor: color.bg.l0,
+    resizable: false,
+    transparent: false,
+    frame: false,
+    maximizable: false,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
       // preload: getPreloadScriptPath()
     },
-    frame: false,
   })
 
   mainWindow.on('closed', function () {
