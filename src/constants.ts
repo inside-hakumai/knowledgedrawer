@@ -1,8 +1,8 @@
 export const color = {
   text: {
     normal: '#2C363F',
-    textSub1: '#333333',
-    textSub2: '#666666',
+    sub1: '#333333',
+    sub2: '#666666',
   },
   bg: {
     l0: '#F0F0F0',

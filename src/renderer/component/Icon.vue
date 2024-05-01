@@ -1,17 +1,18 @@
 <template>
   <div class="Icon">
-    <search class="Icon__vector" v-if="type === 'search'" :size="size" />
-    <description class="Icon__vector" v-if="type === 'description'" :size="size" />
+    <component :is="vectorComponent" class="Icon__vector" :size="size" :css-fill="color" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, ref, watchEffect } from 'vue'
+import { computed, defineProps } from 'vue'
 
 import Search from './IconVector/Search.vue'
 import Description from './IconVector/Description.vue'
+import MoreHorizontal from './IconVector/MoreHorizontal.vue'
+import * as constants from '../../constants'
 
-type IconType = 'search' | 'description'
+export type IconType = 'search' | 'description' | 'moreHorizontal'
 
 const props = defineProps({
   type: {
@@ -20,8 +21,25 @@ const props = defineProps({
   },
   size: {
     type: Number,
+    required: false,
     default: 24,
   },
+  color: {
+    type: String,
+    required: false,
+    default: constants.color.text.sub2,
+  },
+})
+
+const vectorComponent = computed(() => {
+  switch (props.type) {
+    case 'search':
+      return Search
+    case 'description':
+      return Description
+    case 'moreHorizontal':
+      return MoreHorizontal
+  }
 })
 </script>
 

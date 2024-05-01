@@ -10,11 +10,16 @@
 
 <script setup lang="ts">
 import { defineProps } from 'vue'
+import { color } from '../../../constants'
 
 const props = defineProps({
   size: {
     type: Number,
     default: 24,
+  },
+  cssFill: {
+    type: String,
+    default: color.text.sub2,
   },
 })
 </script>
@@ -23,6 +28,6 @@ const props = defineProps({
 svg {
   width: var(--size);
   height: var(--size);
-  fill: var(--color-text-sub-l2);
+  fill: v-bind('cssFill');
 }
 </style>
