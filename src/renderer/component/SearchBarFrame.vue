@@ -5,15 +5,27 @@
       <input class="SearchBarFrame__SearchBarInput" type="text" />
       <div class="SearchBarFrame__MatchCount">23 件</div>
     </div>
+    <div class="SearchBarFrame__Actions">
+      <icon-button type="add" :buttonSize="28" :iconSize="20" :color="constants.color.text.sub1" />
+      <icon-button
+        type="settings"
+        :buttonSize="28"
+        :iconSize="20"
+        :color="constants.color.text.sub1"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import Icon from './Icon.vue'
+import IconButton from './IconButton.vue'
+import * as constants from '../../constants'
 </script>
 
 <style lang="scss" scoped>
 .SearchBarFrame {
+  position: relative;
   -webkit-app-region: drag;
   width: calc(100% - 280px);
   height: calc(60px - 16px);
@@ -54,5 +66,15 @@ import Icon from './Icon.vue'
   font-size: 12px;
   color: var(--color-text-sub-l2);
   right: 12px;
+}
+
+.SearchBarFrame__Actions {
+  -webkit-app-region: no-drag;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 </style>

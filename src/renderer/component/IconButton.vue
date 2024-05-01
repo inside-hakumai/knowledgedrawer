@@ -1,6 +1,6 @@
 <template>
   <button class="IconButton" @click="() => emits('click')">
-    <icon class="IconButton__icon" type="moreHorizontal" :size="iconSize" />
+    <icon class="IconButton__icon" :type="type" :size="iconSize" :color="color" />
   </button>
 </template>
 
