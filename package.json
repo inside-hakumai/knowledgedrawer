@@ -1,11 +1,11 @@
 {
-  "name": "knowledgebase",
+  "name": "knowledgedrawer",
   "version": "0.1.0",
   "description": "",
   "main": "./build/main.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/inside-hakumai/knowledgebase.git"
+    "url": "https://github.com/inside-hakumai/knowledgedrawer.git"
   },
   "scripts": {
     "predev": "rimraf dev-out",
@@ -44,10 +44,10 @@
     ]
   },
   "build": {
-    "appId": "dev.insidehakumai.knowledgebase",
-    "artifactName": "knowledgebase.${ext}",
+    "appId": "dev.insidehakumai.knowledgedrawer",
+    "artifactName": "knowledgedrawer.${ext}",
     "afterSign": "misc/notarize.js",
-    "productName": "Knowledgebase",
+    "productName": "KnowledgeDrawer",
     "files": [
       "build/**/*"
     ],

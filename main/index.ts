@@ -238,7 +238,7 @@ const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
     markdownFiles.map(async (mdFile, index) => {
       const fileText = await fs.readFile(
         path.join(knowledgeStoreDirectoryPath, mdFile.name),
-        'utf8'
+        'utf8',
       )
       const parsedMd = marked.parse(fileText)
       const parsedHtml = parseHtml(parsedMd)
@@ -248,7 +248,7 @@ const prepareKnowledge = async (knowledgeStoreDirectoryPath: string) => {
         contents: fileText,
         fileName: mdFile.name,
       }
-    })
+    }),
   )
 }
 
@@ -467,7 +467,7 @@ app.whenReady().then(async () => {
   // 通知領域に表示させるアイコンの設定
   tray = new Tray(treyIconPath)
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Toggle Knowledgebase', click: toggleWindow },
+    { label: 'Toggle KnowledgeDrawer', click: toggleWindow },
     { type: 'separator' },
     {
       label: 'Preference',
