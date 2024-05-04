@@ -1,7 +1,7 @@
 <template>
-  <div class="Detail">
+  <div class="Detail" v-if="knowledge">
     <div class="Detail__header">
-      <div class="Detail__title">{{ sampleTitle }}</div>
+      <div class="Detail__title">{{ knowledge.title }}</div>
       <div class="Detail__actions">
         <icon-button
           class="Detail__actionIcon"
@@ -11,7 +11,7 @@
         />
       </div>
     </div>
-    <div class="Detail__contents" v-html="markdownHtml" />
+    <div class="Detail__contents" v-html="knowledge.contentsMarkdownHtml" />
   </div>
 </template>
 
@@ -19,32 +19,26 @@
 import * as marked from 'marked'
 import { ref, watchEffect } from 'vue'
 import DOMPurify from 'dompurify'
-import Icon from './Icon.vue'
 import * as constants from '../../constants'
 import IconButton from './IconButton.vue'
+import { useStore } from '../composable/useStore'
 
-const sampleTitle = 'kotlinの関数をテスト実行する方法'
+const searchStore = useStore()
 
-const sampleMarkdown = `
-kotlinファイルにおいて、main関数はプログラムのエントリポイントとして認識される。
-IntelliJ上では、main関数の左に実行アイコンが表示され、そのmain関数を実行することができる。
-
-main関数の中でテストしたいクラスやメソッドを呼び出す処理を書けばその場で動作確認ができる。
-
-\`\`\`diff
-fun main() {
-    println("Hello, World!")
-}
-\`\`\`
-
-`
-
-const markdownHtml = ref<string | null>(null)
+const knowledge = ref<{ title: string; contentsMarkdownHtml: string } | null>(null)
 
 watchEffect(async () => {
-  const parsedMarkdownHtml = await marked.parse(sampleMarkdown)
+  const { selectedKnowledge } = searchStore
+  if (!selectedKnowledge) {
+    knowledge.value = null
+    return
+  }
 
-  markdownHtml.value = DOMPurify.sanitize(parsedMarkdownHtml)
+  const parsedMarkdownHtml = await marked.parse(selectedKnowledge.contents)
+  knowledge.value = {
+    title: selectedKnowledge.title,
+    contentsMarkdownHtml: DOMPurify.sanitize(parsedMarkdownHtml),
+  }
 })
 </script>
 

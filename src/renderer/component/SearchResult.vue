@@ -1,7 +1,12 @@
 <template>
   <div class="SearchResult">
     <ul class="SearchResult__itemList">
-      <li class="SearchResult__item" v-for="item in items" :key="item.id">
+      <li
+        class="SearchResult__item"
+        :class="{ '-selected': searchStore.selectedKnowledgeId === item.id }"
+        v-for="item in items"
+        :key="item.id"
+      >
         <icon class="SearchResult__itemIcon" type="description" :size="17" />
         <span class="SearchResult__itemLabel">{{ item.title }}</span>
       </li>
@@ -10,13 +15,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import Icon from './Icon.vue'
-import { useSearchStore } from '../composable/useStore'
+import { useStore } from '../composable/useStore'
+import { useKeybindingStore } from '../composable/useStore'
 
-const searchStore = useSearchStore()
+const searchStore = useStore()
+const { setKeybinding } = useKeybindingStore()
 
-const items = computed(() => searchStore.result ?? [])
+const items = computed(() => searchStore.searchResult ?? [])
+
+watch(items, () => {
+  if (items.value.length > 0) {
+    setKeybinding('ArrowDown', searchStore.selectDown)
+    setKeybinding('ArrowUp', searchStore.selectUp)
+  } else {
+    setKeybinding('ArrowDown', () => {})
+    setKeybinding('ArrowUp', () => {})
+  }
+})
+
+onUnmounted(() => {
+  setKeybinding('ArrowDown', () => {})
+  setKeybinding('ArrowUp', () => {})
+})
 </script>
 
 <style lang="scss" scoped>
@@ -47,6 +69,10 @@ const items = computed(() => searchStore.result ?? [])
     cursor: pointer;
     background: var(--color-active);
   }
+}
+
+.SearchResult__item.-selected {
+  background: var(--color-active);
 }
 
 .SearchResult__itemIcon {

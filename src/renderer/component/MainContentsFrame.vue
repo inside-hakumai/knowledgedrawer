@@ -3,6 +3,7 @@
     <div class="MainContentsFrame__SearchResult">
       <search-result />
     </div>
+    <div class="MainContentsFrame__Border" />
     <div class="MainContentsFrame__Detail">
       <detail />
     </div>
@@ -11,9 +12,11 @@
 
 <style lang="scss" scoped>
 .MainContentsFrame {
+  position: relative;
   display: flex;
   flex: 1;
   width: 100%;
+  overflow: hidden;
 }
 
 .MainContentsFrame__SearchResult {
@@ -21,21 +24,19 @@
   height: 100%;
 }
 
+.MainContentsFrame__Border {
+  top: 50%;
+  display: block;
+  height: calc(100% - 40px);
+  border-left: 1px solid var(--color-border);
+  transform: translateY(20px);
+}
+
 .MainContentsFrame__Detail {
   position: relative;
   flex: 1;
   height: 100%;
-
-  &::before {
-    position: absolute;
-    top: 50%;
-    display: block;
-    width: 1px;
-    height: 500px;
-    content: '';
-    background: var(--color-border);
-    transform: translateY(-50%);
-  }
+  overflow: scroll;
 }
 </style>
 <script setup lang="ts">

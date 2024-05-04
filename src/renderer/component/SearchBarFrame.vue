@@ -2,8 +2,21 @@
   <div class="SearchBarFrame">
     <div class="SearchBarFrame__SearchBar">
       <icon class="SearchBarFrame__SearchBarInputIcon" type="search" :size="20" />
-      <input class="SearchBarFrame__SearchBarInput" type="text" @input="onInputSearch" />
-      <div class="SearchBarFrame__MatchCount">23 件</div>
+      <!--
+      input要素は通常、上下矢印キーでキャレット位置を変更するような挙動になるが
+      このアプリケーションではSearchResultのリスト内アイテムを選択するのに使うため、こちらの操作は無効化する
+      -->
+      <input
+        class="SearchBarFrame__SearchBarInput"
+        type="text"
+        @input="onInputSearch"
+        ref="searchBarInputRef"
+        @keydown.up.prevent
+        @keydown.down.prevent
+      />
+      <div class="SearchBarFrame__MatchCount" v-if="searchStore.searchResult">
+        {{ searchStore.searchResult.length }} 件
+      </div>
     </div>
     <div class="SearchBarFrame__Actions">
       <icon-button type="add" :buttonSize="28" :iconSize="20" :color="constants.color.text.sub1" />
@@ -22,24 +35,35 @@ import Icon from './Icon.vue'
 import IconButton from './IconButton.vue'
 import * as constants from '../../constants'
 import { useIpcApi } from '../composable/useIpcApi'
-import { useSearchStore } from '../composable/useStore'
+import { useStore } from '../composable/useStore'
+import { onMounted, ref } from 'vue'
 
 const { search } = useIpcApi()
-const searchStore = useSearchStore()
+const searchStore = useStore()
+
+const searchBarInputRef = ref<HTMLInputElement | null>(null)
 
 const onInputSearch = async (e: Event) => {
   if (!(e.target instanceof HTMLInputElement)) {
     return
   }
+  const searchWord = e.target.value
 
-  const searchResult = await search(e.target.value)
-  if (!searchResult.isSuccess) {
-    console.error(searchResult.data)
-    return
+  if (searchWord === '') {
+    searchStore.clearSearchResult()
+  } else {
+    const searchResult = await search(e.target.value)
+    if (!searchResult.isSuccess) {
+      console.error(searchResult.data)
+      return
+    }
+    searchStore.setSearchResult(searchResult.data)
   }
-
-  searchStore.setResult(searchResult.data)
 }
+
+onMounted(() => {
+  searchBarInputRef.value?.focus()
+})
 </script>
 
 <style lang="scss" scoped>
