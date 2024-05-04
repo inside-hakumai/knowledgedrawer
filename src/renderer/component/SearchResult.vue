@@ -1,27 +1,22 @@
 <template>
   <div class="SearchResult">
     <ul class="SearchResult__itemList">
-      <li class="SearchResult__item" v-for="item in items" :key="item">
+      <li class="SearchResult__item" v-for="item in items" :key="item.id">
         <icon class="SearchResult__itemIcon" type="description" :size="17" />
-        <span class="SearchResult__itemLabel">{{ item }}</span>
+        <span class="SearchResult__itemLabel">{{ item.title }}</span>
       </li>
     </ul>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import Icon from './Icon.vue'
+import { useSearchStore } from '../composable/useStore'
 
-const items = ref<string[]>([
-  'kotlinのテストの書き方',
-  'kotlinの関数をテスト実行する方法',
-  '結果2',
-  'タイトルがめっちゃ長いアイテムタイトルがめっちゃ長いアイテムタイトルがめっちゃ長いアイテム',
-  'テスト3',
-  'Test',
-  'Hoge',
-])
+const searchStore = useSearchStore()
+
+const items = computed(() => searchStore.result ?? [])
 </script>
 
 <style lang="scss" scoped>

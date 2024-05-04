@@ -22,15 +22,23 @@ import Icon from './Icon.vue'
 import IconButton from './IconButton.vue'
 import * as constants from '../../constants'
 import { useIpcApi } from '../composable/useIpcApi'
+import { useSearchStore } from '../composable/useStore'
 
 const { search } = useIpcApi()
+const searchStore = useSearchStore()
 
 const onInputSearch = async (e: Event) => {
   if (!(e.target instanceof HTMLInputElement)) {
     return
   }
 
-  console.debug(await search(e.target.value))
+  const searchResult = await search(e.target.value)
+  if (!searchResult.isSuccess) {
+    console.error(searchResult.data)
+    return
+  }
+
+  searchStore.setResult(searchResult.data)
 }
 </script>
 

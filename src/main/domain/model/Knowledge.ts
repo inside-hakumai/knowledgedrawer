@@ -1,5 +1,5 @@
 import zod, { ZodSchema } from 'zod'
-import { KnowledgeId } from '../../../shared/id'
+import { KnowledgeId } from '../../../shared/type'
 
 export interface KnowledgeMetadata {
   id: KnowledgeId

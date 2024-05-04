@@ -1,12 +1,12 @@
-import { KnowledgeId } from '../../shared/id'
-import zod, { date, ZodSchema } from 'zod'
+import { DateTimeString, KnowledgeId } from '@shared/type'
+import zod, { ZodSchema } from 'zod'
 
 export interface Knowledge {
   id: KnowledgeId
   title: string
   contents: string
-  createdAt: Date
-  updatedAt: Date
+  createdAt: DateTimeString
+  updatedAt: DateTimeString
 }
 
 export const knowledgeSchema = zod.object({
@@ -16,9 +16,9 @@ export const knowledgeSchema = zod.object({
   createdAt: zod
     .string()
     .datetime()
-    .transform((date) => new Date(date)) as unknown as ZodSchema<Date>,
+    .transform(DateTimeString) as unknown as ZodSchema<DateTimeString>,
   updatedAt: zod
     .string()
     .datetime()
-    .transform((date) => new Date(date)) as unknown as ZodSchema<Date>,
+    .transform(DateTimeString) as unknown as ZodSchema<DateTimeString>,
 }) satisfies ZodSchema<Knowledge>
