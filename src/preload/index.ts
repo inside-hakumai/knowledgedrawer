@@ -1,3 +1,5 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 
-contextBridge.exposeInMainWorld('api', {})
+contextBridge.exposeInMainWorld('api', {
+  search: async (query: string) => ipcRenderer.invoke('search', query),
+})

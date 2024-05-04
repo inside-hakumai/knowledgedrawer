@@ -5,7 +5,11 @@ import {
   KnowledgeStoreApplication,
   KnowledgeStoreApplicationImpl,
 } from './application/KnowledgeStore/KnowledgeStoreApplication'
+import { IpcHandler, IpcHandlerImpl } from './ipcHandler'
 
+container.register<IpcHandler>('IpcHandler', {
+  useClass: IpcHandlerImpl,
+})
 container.register<KnowledgeStoreApplication>('KnowledgeStoreApplication', {
   useClass: KnowledgeStoreApplicationImpl,
 })

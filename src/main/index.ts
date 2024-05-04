@@ -5,25 +5,22 @@ import path from 'path'
 import { color } from '../constants'
 import { container } from 'tsyringe'
 import { KnowledgeStoreApplication } from './application/KnowledgeStore/KnowledgeStoreApplication'
+import { IpcHandler } from './ipcHandler'
+import { getExecMode } from './lib/environment'
 
+const ipcHandler = container.resolve<IpcHandler>('IpcHandler')
 const knowledgeStoreApplication = container.resolve<KnowledgeStoreApplication>(
   'KnowledgeStoreApplication',
 )
 
 const getPreloadScriptPath = () => {
-  if (process.env.NODE_ENV === 'development') {
-    return path.join(__dirname, '..', 'preload', 'index.js')
-  } else {
-    // ビルド後のメインプロセスのファイルがout/main.jsであり、同階層にpreload.jsがあるという想定
-    return path.join(__dirname, 'preload.js')
-  }
+  // ビルド後のメインプロセスのファイルがout/main.jsであり、同階層にpreload.jsがあるという想定
+  return path.join(__dirname, 'preload.js')
 }
 
 let mainWindow: BrowserWindow | null
 
 const createWindow = async () => {
-  console.debug(await knowledgeStoreApplication.loadKnowledges())
-
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
@@ -36,7 +33,7 @@ const createWindow = async () => {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
-      // preload: getPreloadScriptPath()
+      preload: getPreloadScriptPath(),
     },
   })
 
@@ -57,7 +54,11 @@ const createWindow = async () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.on('ready', () => {
+  ipcMain.handle('search', ipcHandler.handleSearch.bind(ipcHandler))
+
+  createWindow()
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {

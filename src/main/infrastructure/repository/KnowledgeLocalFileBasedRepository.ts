@@ -38,7 +38,6 @@ export class KnowledgeLocalFileBasedRepository implements KnowledgeRepository {
       return Failure(`Failed to read metadata.json: ${e}`)
     }
 
-    console.debug(metadataJson)
     const parseResult = zod.array(knowledgeMetadataSchema).safeParse(metadataJson)
     if (!parseResult.success) {
       return Failure(`Failed to parse metadata.json: ${parseResult.error.message}`)

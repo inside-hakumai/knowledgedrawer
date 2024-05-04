@@ -15,8 +15,8 @@ export type Knowledge = {
 export const knowledgeMetadataSchema = zod.object({
   id: zod.string().uuid().transform(KnowledgeId) as unknown as ZodSchema<KnowledgeId>,
   title: zod.string(),
-  createdAt: zod.coerce.date(),
-  updatedAt: zod.coerce.date(),
+  createdAt: zod.string().datetime() as unknown as ZodSchema<Date>,
+  updatedAt: zod.string().datetime() as unknown as ZodSchema<Date>,
 }) satisfies ZodSchema<KnowledgeMetadata>
 
 export const knowledgeSchema = zod.object({

@@ -2,7 +2,7 @@
   <div class="SearchBarFrame">
     <div class="SearchBarFrame__SearchBar">
       <icon class="SearchBarFrame__SearchBarInputIcon" type="search" :size="20" />
-      <input class="SearchBarFrame__SearchBarInput" type="text" />
+      <input class="SearchBarFrame__SearchBarInput" type="text" @input="onInputSearch" />
       <div class="SearchBarFrame__MatchCount">23 件</div>
     </div>
     <div class="SearchBarFrame__Actions">
@@ -21,6 +21,17 @@
 import Icon from './Icon.vue'
 import IconButton from './IconButton.vue'
 import * as constants from '../../constants'
+import { useIpcApi } from '../composable/useIpcApi'
+
+const { search } = useIpcApi()
+
+const onInputSearch = async (e: Event) => {
+  if (!(e.target instanceof HTMLInputElement)) {
+    return
+  }
+
+  console.debug(await search(e.target.value))
+}
 </script>
 
 <style lang="scss" scoped>
