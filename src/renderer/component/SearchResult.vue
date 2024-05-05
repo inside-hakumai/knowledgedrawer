@@ -3,9 +3,10 @@
     <ul class="SearchResult__itemList">
       <li
         class="SearchResult__item"
-        :class="{ '-selected': searchStore.selectedKnowledgeId === item.id }"
+        :class="{ '-selected': searchState.selectedKnowledgeId === item.id }"
         v-for="item in items"
         :key="item.id"
+        @click="() => searchState.select(item.id)"
       >
         <icon class="SearchResult__itemIcon" type="description" :size="17" />
         <span class="SearchResult__itemLabel">{{ item.title }}</span>
@@ -17,18 +18,19 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import Icon from './Icon.vue'
-import { useStore } from '../composable/useStore'
+import { useSearchStateStore } from '../composable/useStore'
 import { useKeybindingStore } from '../composable/useStore'
 
-const searchStore = useStore()
+const searchState = useSearchStateStore()
 const { setKeybinding } = useKeybindingStore()
 
-const items = computed(() => searchStore.searchResult ?? [])
+const items = computed(() => searchState.searchResult ?? [])
 
 watch(items, () => {
+  console.debug(items)
   if (items.value.length > 0) {
-    setKeybinding('ArrowDown', searchStore.selectDown)
-    setKeybinding('ArrowUp', searchStore.selectUp)
+    setKeybinding('ArrowDown', searchState.selectDown)
+    setKeybinding('ArrowUp', searchState.selectUp)
   } else {
     setKeybinding('ArrowDown', () => {})
     setKeybinding('ArrowUp', () => {})

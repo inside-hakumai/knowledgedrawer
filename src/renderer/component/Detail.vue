@@ -26,9 +26,9 @@ import { ref, watchEffect } from 'vue'
 import DOMPurify from 'dompurify'
 import * as constants from '../../constants'
 import IconButton from './IconButton.vue'
-import { useStore } from '../composable/useStore'
+import { useSearchStateStore } from '../composable/useStore'
 
-const searchStore = useStore()
+const searchStore = useSearchStateStore()
 
 const knowledge = ref<{ title: string; contentsMarkdownHtml: string } | null>(null)
 

@@ -3,7 +3,7 @@ import { Knowledge } from '../model'
 import { computed, ref } from 'vue'
 import { KnowledgeId } from '@shared/type'
 
-export const useStore = defineStore('root', () => {
+export const useSearchStateStore = defineStore('searchState', () => {
   const searchResult = ref<Knowledge[] | null>(null)
   const selectedKnowledgeId = ref<KnowledgeId | null>(null)
 
@@ -29,6 +29,12 @@ export const useStore = defineStore('root', () => {
     selectedKnowledgeId.value = null
   }
 
+  const select = (id: KnowledgeId) => {
+    if (searchResult.value?.find((k) => k.id === id)) {
+      selectedKnowledgeId.value = id
+    }
+  }
+
   const selectDown = () => {
     const index = searchResult.value?.findIndex((k) => k.id === selectedKnowledgeId.value)
     if (index !== undefined && index !== -1 && index !== searchResult.value!.length - 1) {
@@ -49,6 +55,7 @@ export const useStore = defineStore('root', () => {
     selectedKnowledge,
     setSearchResult,
     clearSearchResult,
+    select,
     selectDown,
     selectUp,
   }
