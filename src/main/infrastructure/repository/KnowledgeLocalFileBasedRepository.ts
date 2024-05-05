@@ -3,7 +3,8 @@ import { Knowledge, knowledgeMetadataSchema } from '../../domain/model/Knowledge
 import { getExecMode } from '../../lib/environment'
 import path from 'path'
 import fs from 'fs/promises'
-import { Failure, Result, Success } from '../../../shared/result'
+import { watch } from 'fs'
+import { Failure, Ok, Result, Success } from '../../../shared/result'
 import zod from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 import dayjs from 'dayjs'
@@ -14,12 +15,18 @@ import { DateTimeString, KnowledgeId } from '../../../shared/type'
  * 開発環境かつ未パッケージ状態でのみ使用できます。
  */
 export class KnowledgeLocalFileBasedRepository implements KnowledgeRepository {
+  knowledgeFileChangedListeners: ((knowledgeId: KnowledgeId) => void)[] = []
+
   constructor() {
     if (getExecMode() !== 'development-unpackaged') {
       throw new Error(
         'KnowledgeLocalFileBasedRepository can only be used in development-unpackaged mode',
       )
     }
+
+    this.watchKnowledges().catch((e) => {
+      console.error(`Failed to watch knowledges: ${e}`)
+    })
   }
 
   async getAll(): Promise<Result<Knowledge[], string>> {
@@ -138,6 +145,51 @@ export class KnowledgeLocalFileBasedRepository implements KnowledgeRepository {
     }
 
     return Success(path.join(knowledgeDirPath, `${knowledgeId}.md`))
+  }
+
+  public addKnowledgeChangedListener(listener: (knowledgeId: KnowledgeId) => void): void {
+    this.knowledgeFileChangedListeners.push(listener)
+  }
+
+  private async watchKnowledges(): Promise<Result<void, string>> {
+    const identifyKnowledgeDirPathResult = await identifyKnowledgeDirPath()
+    if (!identifyKnowledgeDirPathResult.isSuccess) {
+      return Failure(
+        `Failed to identify the dev-knowledge directory path: ${identifyKnowledgeDirPathResult.data}`,
+      )
+    }
+    const knowledgeDirPath = identifyKnowledgeDirPathResult.data
+
+    watch(knowledgeDirPath, { recursive: true }, (eventType, filename) => {
+      try {
+        if (typeof filename !== 'string') {
+          return
+        }
+
+        const isMarkdownFile = filename.endsWith('.md')
+        if (!isMarkdownFile) {
+          return
+        }
+
+        let knowledgeId: KnowledgeId
+        try {
+          knowledgeId = KnowledgeId(filename.replace('.md', ''))
+        } catch (e) {
+          // ファイル名がKnowledgeIdに変換できない場合は無視する（UUID形式じゃない場合など）
+          return
+        }
+
+        console.log(`Knowledge file change detected: ${eventType} ${knowledgeId}.md`)
+
+        this.knowledgeFileChangedListeners.forEach((listener) => {
+          listener(knowledgeId)
+        })
+      } catch (e) {
+        console.error(`Failed to handle knowledge file change: ${e}`)
+      }
+    })
+
+    return Ok()
   }
 }
 

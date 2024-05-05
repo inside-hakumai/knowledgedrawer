@@ -21,7 +21,11 @@ export class KnowledgeApplicationImpl implements KnowledgeApplication {
   constructor(
     @inject('KnowledgeRepository') private knowledgeRepository: KnowledgeRepository,
     @inject('ElectronApiRepository') private electronApiRepository: ElectronApiRepository,
-  ) {}
+  ) {
+    this.knowledgeRepository.addKnowledgeChangedListener(async (knowledgeId) => {
+      await this.reloadCache()
+    })
+  }
 
   public async loadKnowledges() {
     const cacheResult = this.cache.get()
@@ -45,6 +49,8 @@ export class KnowledgeApplicationImpl implements KnowledgeApplication {
     }
 
     this.cache.set(result.data)
+    console.log(`Reloaded cache: ${result.data.length} knowledges`)
+
     return Ok()
   }
 
