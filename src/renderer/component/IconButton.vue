@@ -45,7 +45,7 @@ const emits = defineEmits<{ (event: 'click'): void }>()
   border-radius: 4px;
 
   &:hover {
-    background: var(--color-active);
+    background: var(--color-focus);
   }
 }
 </style>

@@ -67,7 +67,7 @@ onUnmounted(() => {
 
   &:hover {
     cursor: pointer;
-    background: var(--color-active);
+    background: var(--color-focus);
   }
 }
 
