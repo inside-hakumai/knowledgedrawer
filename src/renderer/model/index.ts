@@ -1,7 +1,8 @@
 import { DateTimeString, KnowledgeId } from '@shared/type'
-import zod, { ZodSchema } from 'zod'
+import zod, { ZodSchema, ZodTypeAny } from 'zod'
 
 export interface Knowledge {
+  isTentative: false
   id: KnowledgeId
   title: string
   contents: string
@@ -9,16 +10,37 @@ export interface Knowledge {
   updatedAt: DateTimeString
 }
 
+export interface TentativeKnowledge {
+  isTentative: true
+  id: KnowledgeId
+  title: string
+}
+
+export const isKnowledgeId = zod
+  .string()
+  .uuid()
+  .transform(KnowledgeId) as unknown as ZodSchema<KnowledgeId>
+
+export const isDateTimeString: ZodSchema<DateTimeString> = zod
+  .string()
+  .datetime()
+  .transform(DateTimeString) as unknown as ZodSchema<DateTimeString>
+
 export const knowledgeSchema = zod.object({
-  id: zod.string().uuid().transform(KnowledgeId) as unknown as ZodSchema<KnowledgeId>,
+  isTentative: zod.literal(false),
+  id: isKnowledgeId,
   title: zod.string(),
   contents: zod.string(),
-  createdAt: zod
-    .string()
-    .datetime()
-    .transform(DateTimeString) as unknown as ZodSchema<DateTimeString>,
-  updatedAt: zod
-    .string()
-    .datetime()
-    .transform(DateTimeString) as unknown as ZodSchema<DateTimeString>,
+  createdAt: isDateTimeString,
+  updatedAt: isDateTimeString,
 }) satisfies ZodSchema<Knowledge>
+
+export const tentativeKnowledgeSchema = zod.object({
+  isTentative: zod.literal(true),
+  id: isKnowledgeId,
+  title: zod.string(),
+}) satisfies ZodSchema<TentativeKnowledge>
+
+export const isValidAs = <T extends ZodTypeAny>(schema: T, data: unknown): data is zod.infer<T> => {
+  return schema.safeParse(data).success
+}

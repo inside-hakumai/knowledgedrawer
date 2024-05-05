@@ -26,23 +26,29 @@ import { ref, watchEffect } from 'vue'
 import DOMPurify from 'dompurify'
 import * as constants from '../../constants'
 import IconButton from './IconButton.vue'
-import { useSearchStateStore } from '../composable/useStore'
+import { useSearchModeStateStore } from '../composable/useStore'
+import { isValidAs, knowledgeSchema, tentativeKnowledgeSchema } from '../model'
 
-const searchStore = useSearchStateStore()
+const searchModeState = useSearchModeStateStore()
 
 const knowledge = ref<{ title: string; contentsMarkdownHtml: string } | null>(null)
 
 watchEffect(async () => {
-  const { selectedKnowledge } = searchStore
-  if (!selectedKnowledge) {
-    knowledge.value = null
-    return
+  const { selectedKnowledge } = searchModeState
+
+  if (isValidAs(knowledgeSchema, selectedKnowledge)) {
+    const parsedMarkdownHtml = await marked.parse(selectedKnowledge.contents)
+    knowledge.value = {
+      title: selectedKnowledge.title,
+      contentsMarkdownHtml: DOMPurify.sanitize(parsedMarkdownHtml),
+    }
   }
 
-  const parsedMarkdownHtml = await marked.parse(selectedKnowledge.contents)
-  knowledge.value = {
-    title: selectedKnowledge.title,
-    contentsMarkdownHtml: DOMPurify.sanitize(parsedMarkdownHtml),
+  if (isValidAs(tentativeKnowledgeSchema, selectedKnowledge)) {
+    knowledge.value = {
+      title: selectedKnowledge.title,
+      contentsMarkdownHtml: '',
+    }
   }
 })
 </script>

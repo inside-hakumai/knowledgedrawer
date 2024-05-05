@@ -14,12 +14,18 @@
         @keydown.up.prevent
         @keydown.down.prevent
       />
-      <div class="SearchBarFrame__MatchCount" v-if="searchStore.searchResult">
-        {{ searchStore.searchResult.length }} 件
+      <div class="SearchBarFrame__MatchCount" v-if="searchModeState.knowledgeList">
+        {{ searchModeState.knowledgeList.length }} 件
       </div>
     </div>
     <div class="SearchBarFrame__Actions">
-      <icon-button type="add" :buttonSize="28" :iconSize="20" :color="constants.color.text.sub1" />
+      <icon-button
+        type="add"
+        :buttonSize="28"
+        :iconSize="20"
+        :color="constants.color.text.sub1"
+        @click="searchModeState.startKnowledgeTitleEdit"
+      />
       <icon-button
         type="settings"
         :buttonSize="28"
@@ -35,11 +41,11 @@ import Icon from './Icon.vue'
 import IconButton from './IconButton.vue'
 import * as constants from '../../constants'
 import { useIpcApi } from '../composable/useIpcApi'
-import { useSearchStateStore } from '../composable/useStore'
+import { useSearchModeStateStore } from '../composable/useStore'
 import { onMounted, ref } from 'vue'
 
 const { search } = useIpcApi()
-const searchStore = useSearchStateStore()
+const searchModeState = useSearchModeStateStore()
 
 const searchBarInputRef = ref<HTMLInputElement | null>(null)
 
@@ -50,14 +56,14 @@ const onInputSearch = async (e: Event) => {
   const searchWord = e.target.value
 
   if (searchWord === '') {
-    searchStore.clearSearchResult()
+    searchModeState.clearSearchResult()
   } else {
     const searchResult = await search(e.target.value)
     if (!searchResult.isSuccess) {
       console.error(searchResult.data)
       return
     }
-    searchStore.setSearchResult(searchResult.data)
+    searchModeState.setSearchResult(searchResult.data)
   }
 }
 

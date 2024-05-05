@@ -1,7 +1,7 @@
 <template>
   <div class="MainContentsFrame">
-    <div class="MainContentsFrame__SearchResult">
-      <search-result />
+    <div class="MainContentsFrame__KnowledgeList">
+      <knowledge-list />
     </div>
     <div class="MainContentsFrame__Border" />
     <div class="MainContentsFrame__Detail">
@@ -9,6 +9,11 @@
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import KnowledgeList from './KnowledgeList.vue'
+import Detail from './Detail.vue'
+</script>
 
 <style lang="scss" scoped>
 .MainContentsFrame {
@@ -19,7 +24,7 @@
   overflow: hidden;
 }
 
-.MainContentsFrame__SearchResult {
+.MainContentsFrame__KnowledgeList {
   width: 300px;
   height: 100%;
 }
@@ -39,7 +44,3 @@
   overflow: scroll;
 }
 </style>
-<script setup lang="ts">
-import SearchResult from './SearchResult.vue'
-import Detail from './Detail.vue'
-</script>
