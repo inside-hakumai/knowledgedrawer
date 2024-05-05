@@ -4,14 +4,11 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import { color } from '../constants'
 import { container } from 'tsyringe'
-import { KnowledgeStoreApplication } from './application/KnowledgeStore/KnowledgeStoreApplication'
+import { KnowledgeApplication } from './application/KnowledgeApplication'
 import { IpcHandler } from './ipcHandler'
 import { getExecMode } from './lib/environment'
 
 const ipcHandler = container.resolve<IpcHandler>('IpcHandler')
-const knowledgeStoreApplication = container.resolve<KnowledgeStoreApplication>(
-  'KnowledgeStoreApplication',
-)
 
 const getPreloadScriptPath = () => {
   // ビルド後のメインプロセスのファイルがout/main.jsであり、同階層にpreload.jsがあるという想定
@@ -56,6 +53,8 @@ const createWindow = async () => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
   ipcMain.handle('search', ipcHandler.handleSearch.bind(ipcHandler))
+  ipcMain.handle('createEmptyKnowledge', ipcHandler.handleCreateEmptyKnowledge.bind(ipcHandler))
+  ipcMain.handle('startKnowledgeEdit', ipcHandler.handleStartKnowledgeEdit.bind(ipcHandler))
 
   createWindow()
 })

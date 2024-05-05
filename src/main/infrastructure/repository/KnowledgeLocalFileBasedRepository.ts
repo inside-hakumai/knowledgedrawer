@@ -5,6 +5,9 @@ import path from 'path'
 import fs from 'fs/promises'
 import { Failure, Result, Success } from '../../../shared/result'
 import zod from 'zod'
+import { v4 as uuidv4 } from 'uuid'
+import dayjs from 'dayjs'
+import { DateTimeString, KnowledgeId } from '../../../shared/type'
 
 /**
  * リポジトリのディレクトリルート直下の「dev-knowledge」ディレクトリからナレッジを取得するリポジトリです。
@@ -63,6 +66,78 @@ export class KnowledgeLocalFileBasedRepository implements KnowledgeRepository {
     }
 
     return Success(knowledgeList)
+  }
+
+  async createEmptyKnowledgeWithTitle(title: string): Promise<Result<Knowledge, string>> {
+    const identifyResult = await identifyKnowledgeDirPath()
+    if (!identifyResult.isSuccess) {
+      return Failure(`Failed to create knowledge: ${identifyResult.data}`)
+    }
+
+    const knowledgeDirPath = identifyResult.data
+
+    const newKnowledgeId = uuidv4()
+    const newKnowledgeFilePath = path.join(knowledgeDirPath, `${newKnowledgeId}.md`)
+
+    try {
+      await fs.writeFile(newKnowledgeFilePath, '')
+    } catch (e) {
+      return Failure(`Failed to create knowledge file: ${e}`)
+    }
+
+    const newKnowledgeMetadata = {
+      id: KnowledgeId(newKnowledgeId),
+      title,
+      createdAt: DateTimeString(dayjs().toISOString()),
+      updatedAt: DateTimeString(dayjs().toISOString()),
+    }
+
+    const metadataJson = await fs.readFile(path.join(knowledgeDirPath, 'metadata.json'), {
+      encoding: 'utf-8',
+    })
+
+    const parseResult = zod.array(knowledgeMetadataSchema).safeParse(JSON.parse(metadataJson))
+    if (!parseResult.success) {
+      return Failure(`Failed to parse metadata.json: ${parseResult.error.message}`)
+    }
+
+    const knowledgeMetadataList = parseResult.data
+    knowledgeMetadataList.push(newKnowledgeMetadata)
+
+    try {
+      await fs.writeFile(
+        path.join(knowledgeDirPath, 'metadata.json'),
+        JSON.stringify(knowledgeMetadataList, null, 2),
+      )
+    } catch (e) {
+      return Failure(`Failed to write metadata.json: ${e}`)
+    }
+
+    return Success({
+      ...newKnowledgeMetadata,
+      contents: '',
+    })
+  }
+
+  async getFilePath(knowledgeId: KnowledgeId): Promise<Result<string, string>> {
+    const identifyResult = await identifyKnowledgeDirPath()
+    if (!identifyResult.isSuccess) {
+      return Failure(`Failed to get knowledge file path: ${identifyResult.data}`)
+    }
+
+    const knowledgeDirPath = identifyResult.data
+    const knowledgeFilePath = path.join(knowledgeDirPath, `${knowledgeId}.md`)
+
+    try {
+      const status = await fs.lstat(knowledgeFilePath)
+      if (!status.isFile()) {
+        return Failure('Knowledge file is not a file')
+      }
+    } catch (e) {
+      return Failure(`Failed to get knowledge file attributes: ${e}`)
+    }
+
+    return Success(path.join(knowledgeDirPath, `${knowledgeId}.md`))
   }
 }
 

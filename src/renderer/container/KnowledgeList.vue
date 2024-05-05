@@ -25,9 +25,12 @@ import { useKeybindingStore } from '../composable/useStore'
 import KnowledgeListItem from '../component/KnowledgeListItem.vue'
 import SearchResultItemEditing from '../component/KnowledgeListItemEditing.vue'
 import { isValidAs, knowledgeSchema, tentativeKnowledgeSchema } from '../model'
+import { useIpcApi } from '../composable/useIpcApi'
+import { startNewKnowledgeEdit } from '../applicaiton/KnowledgeApplication'
 
 const searchModeState = useSearchModeStateStore()
 const { setKeybinding } = useKeybindingStore()
+const { createEmptyKnowledge } = useIpcApi()
 
 const items = computed(() => searchModeState.knowledgeList ?? [])
 
@@ -47,8 +50,20 @@ onUnmounted(() => {
   setKeybinding('ArrowUp', () => {})
 })
 
-const createNewKnowledge = (title: string) => {
-  console.debug(title)
+const createNewKnowledge = async (title: string) => {
+  if (title === '') {
+    console.warn('title is empty')
+    return
+  }
+
+  const result = await startNewKnowledgeEdit(title)
+  if (!result.isSuccess) {
+    console.error(result.data)
+    return
+  }
+  const entity = result.data
+
+  searchModeState.confirmTentativeKnowledge(entity.id, entity.createdAt)
 }
 </script>
 

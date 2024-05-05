@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { isValidAs, Knowledge, TentativeKnowledge, tentativeKnowledgeSchema } from '../model'
 import { computed, ref } from 'vue'
-import { KnowledgeId, TENTATIVE_KNOWLEDGE_ID } from '@shared/type'
+import { DateTimeString, KnowledgeId, TENTATIVE_KNOWLEDGE_ID } from '@shared/type'
 
 export const useSearchModeStateStore = defineStore('searchModeState', () => {
   const knowledgeList = ref<(Knowledge | TentativeKnowledge)[] | null>(null)
@@ -78,10 +78,6 @@ export const useSearchModeStateStore = defineStore('searchModeState', () => {
     }
   }
 
-  const titleEditingState = ref({
-    isEditing: false,
-    title: '',
-  })
   const startKnowledgeTitleEdit = () => {
     const newKnowledgeList = knowledgeList.value ?? []
 
@@ -94,6 +90,7 @@ export const useSearchModeStateStore = defineStore('searchModeState', () => {
 
     selectedKnowledgeId.value = TENTATIVE_KNOWLEDGE_ID
   }
+
   const setEditingKnowledgeTitle = (title: string) => {
     const tentativeKnowledgeIndex = knowledgeList.value?.findIndex(
       (k) => k.id === TENTATIVE_KNOWLEDGE_ID,
@@ -106,6 +103,34 @@ export const useSearchModeStateStore = defineStore('searchModeState', () => {
     knowledgeList.value![tentativeKnowledgeIndex].title = title
   }
 
+  const confirmTentativeKnowledge = (
+    assignedId: KnowledgeId,
+    confirmedDateTime: DateTimeString,
+  ) => {
+    if (knowledgeList.value === null) {
+      return
+    }
+
+    const tentativeKnowledgeIndex = knowledgeList.value.findIndex((knowledge) =>
+      isValidAs(tentativeKnowledgeSchema, knowledge),
+    )
+
+    if (tentativeKnowledgeIndex === -1) {
+      console.warn('Tentative knowledge not found')
+      return
+    }
+
+    knowledgeList.value[tentativeKnowledgeIndex] = {
+      ...knowledgeList.value![tentativeKnowledgeIndex],
+      isTentative: false,
+      id: assignedId,
+      contents: '',
+      createdAt: confirmedDateTime,
+      updatedAt: confirmedDateTime,
+    }
+    selectedKnowledgeId.value = assignedId
+  }
+
   return {
     knowledgeList: knowledgeList,
     selectedKnowledgeId,
@@ -115,9 +140,9 @@ export const useSearchModeStateStore = defineStore('searchModeState', () => {
     select,
     selectDown,
     selectUp,
-    titleEditingState,
     startKnowledgeTitleEdit,
     setEditingKnowledgeTitle,
+    confirmTentativeKnowledge,
   }
 })
 

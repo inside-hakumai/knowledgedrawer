@@ -1,11 +1,11 @@
 import zod, { ZodSchema } from 'zod'
-import { KnowledgeId } from '../../../shared/type'
+import { DateTimeString, KnowledgeId } from '../../../shared/type'
 
 export interface KnowledgeMetadata {
   id: KnowledgeId
   title: string
-  createdAt: Date
-  updatedAt: Date
+  createdAt: DateTimeString
+  updatedAt: DateTimeString
 }
 
 export type Knowledge = {
@@ -15,8 +15,14 @@ export type Knowledge = {
 export const knowledgeMetadataSchema = zod.object({
   id: zod.string().uuid().transform(KnowledgeId) as unknown as ZodSchema<KnowledgeId>,
   title: zod.string(),
-  createdAt: zod.string().datetime() as unknown as ZodSchema<Date>,
-  updatedAt: zod.string().datetime() as unknown as ZodSchema<Date>,
+  createdAt: zod
+    .string()
+    .datetime()
+    .transform(DateTimeString) as unknown as ZodSchema<DateTimeString>,
+  updatedAt: zod
+    .string()
+    .datetime()
+    .transform(DateTimeString) as unknown as ZodSchema<DateTimeString>,
 }) satisfies ZodSchema<KnowledgeMetadata>
 
 export const knowledgeSchema = zod.object({
