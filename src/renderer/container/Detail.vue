@@ -36,12 +36,18 @@ const knowledge = ref<{ title: string; contentsMarkdownHtml: string } | null>(nu
 watchEffect(async () => {
   const { selectedKnowledge } = searchModeState
 
+  if (!selectedKnowledge) {
+    knowledge.value = null
+    return
+  }
+
   if (isValidAs(knowledgeSchema, selectedKnowledge)) {
     const parsedMarkdownHtml = await marked.parse(selectedKnowledge.contents)
     knowledge.value = {
       title: selectedKnowledge.title,
       contentsMarkdownHtml: DOMPurify.sanitize(parsedMarkdownHtml),
     }
+    return
   }
 
   if (isValidAs(tentativeKnowledgeSchema, selectedKnowledge)) {
@@ -49,6 +55,7 @@ watchEffect(async () => {
       title: selectedKnowledge.title,
       contentsMarkdownHtml: '',
     }
+    return
   }
 })
 </script>
