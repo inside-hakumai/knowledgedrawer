@@ -6,6 +6,9 @@ import Fuse from 'fuse.js'
 import { KnowledgeStoreCache } from '../domain/model/KnowledgeStoreCache'
 import { KnowledgeId } from '../../shared/type'
 import { ElectronApiRepository } from '../domain/repository/ElectronApiRepository'
+import log from 'electron-log'
+
+const logger = log.scope('KnowledgeApplication')
 
 export interface KnowledgeApplication {
   loadKnowledges: () => Promise<Result<Knowledge[], string>>
@@ -57,7 +60,7 @@ export class KnowledgeApplicationImpl implements KnowledgeApplication {
     }
 
     this.cache.set(result.data)
-    console.log(`Reloaded cache: ${result.data.length} knowledges`)
+    logger.log(`Reloaded cache: ${result.data.length} knowledges`)
 
     return Ok()
   }

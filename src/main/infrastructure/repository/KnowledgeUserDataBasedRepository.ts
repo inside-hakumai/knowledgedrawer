@@ -10,6 +10,9 @@ import dayjs from 'dayjs'
 import { DateTimeString, KnowledgeId } from '../../../shared/type'
 import { app as electronApp } from 'electron'
 import { ensureDirectoryExists, ensureFileExists } from '../../lib/helper'
+import log from 'electron-log'
+
+const logger = log.scope('KnowledgeUserDataBasedRepository')
 
 export class KnowledgeUserDataBasedRepository implements KnowledgeRepository {
   knowledgeFileChangedListeners: ((knowledgeId: KnowledgeId) => void)[] = []
@@ -22,7 +25,7 @@ export class KnowledgeUserDataBasedRepository implements KnowledgeRepository {
           `Failed to identify knowledge directory path: ${knowledgeDirPathResult.data}`,
         )
       } else {
-        console.log(`Knowledge directory path: ${knowledgeDirPathResult.data}`)
+        logger.log(`Knowledge directory path: ${knowledgeDirPathResult.data}`)
       }
 
       await ensureDirectoryExists(knowledgeDirPathResult.data).catch((e) => {
@@ -193,13 +196,13 @@ export class KnowledgeUserDataBasedRepository implements KnowledgeRepository {
           return
         }
 
-        console.log(`Knowledge file change detected: ${eventType} ${knowledgeId}.md`)
+        logger.log(`Knowledge file change detected: ${eventType} ${knowledgeId}.md`)
 
         this.knowledgeFileChangedListeners.forEach((listener) => {
           listener(knowledgeId)
         })
       } catch (e) {
-        console.error(`Failed to handle knowledge file change: ${e}`)
+        logger.error(`Failed to handle knowledge file change: ${e}`)
       }
     })
 

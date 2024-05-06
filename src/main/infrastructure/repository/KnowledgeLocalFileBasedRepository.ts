@@ -9,6 +9,9 @@ import zod from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 import dayjs from 'dayjs'
 import { DateTimeString, KnowledgeId } from '../../../shared/type'
+import log from 'electron-log'
+
+const logger = log.scope('KnowledgeLocalFileBasedRepository')
 
 /**
  * リポジトリのディレクトリルート直下の「dev-knowledge」ディレクトリからナレッジを取得するリポジトリです。
@@ -26,14 +29,14 @@ export class KnowledgeLocalFileBasedRepository implements KnowledgeRepository {
 
     const knowledgeDirPathResult = identifyKnowledgeDirPath().then((result) => {
       if (!result.isSuccess) {
-        console.error(`Failed to identify knowledge directory path: ${result.data}`)
+        logger.error(`Failed to identify knowledge directory path: ${result.data}`)
       } else {
-        console.log(`Knowledge directory path: ${result.data}`)
+        logger.log(`Knowledge directory path: ${result.data}`)
       }
     })
 
     this.watchKnowledges().catch((e) => {
-      console.error(`Failed to watch knowledges: ${e}`)
+      logger.error(`Failed to watch knowledges: ${e}`)
     })
   }
 
@@ -187,13 +190,13 @@ export class KnowledgeLocalFileBasedRepository implements KnowledgeRepository {
           return
         }
 
-        console.log(`Knowledge file change detected: ${eventType} ${knowledgeId}.md`)
+        logger.log(`Knowledge file change detected: ${eventType} ${knowledgeId}.md`)
 
         this.knowledgeFileChangedListeners.forEach((listener) => {
           listener(knowledgeId)
         })
       } catch (e) {
-        console.error(`Failed to handle knowledge file change: ${e}`)
+        logger.error(`Failed to handle knowledge file change: ${e}`)
       }
     })
 

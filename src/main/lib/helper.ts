@@ -1,5 +1,8 @@
 import fs from 'fs/promises'
 import { Failure, Ok, Result } from '../../shared/result'
+import log from 'electron-log'
+
+const logger = log.scope('lib/helper')
 
 /**
  * 指定したパスのディレクトリが存在することを確認します。ディレクトリが存在しない場合は、新しくディレクトリを作成します。
@@ -26,7 +29,7 @@ export const ensureDirectoryExists = async (dirPath: string): Promise<Result<voi
   if (shouldCreateDir) {
     try {
       await fs.mkdir(dirPath, { recursive: true })
-      console.log(`Created directory: ${dirPath}`)
+      logger.log(`Created directory: ${dirPath}`)
     } catch (e) {
       return Failure(`Failed to create directory: ${e}`)
     }
@@ -66,7 +69,7 @@ export const ensureFileExists = async (
   if (shouldCreateFile) {
     try {
       await fs.writeFile(filePath, contents)
-      console.log(`Created file: ${filePath}`)
+      logger.log(`Created file: ${filePath}`)
     } catch (e) {
       return Failure(`Failed to create file: ${e}`)
     }
