@@ -5,8 +5,8 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
 import Icon, { IconType } from './Icon.vue'
+import { defineProps, defineEmits } from 'vue'
 
 const props = defineProps({
   type: {

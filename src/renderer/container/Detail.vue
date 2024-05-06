@@ -21,13 +21,13 @@
 </template>
 
 <script setup lang="ts">
-import * as marked from 'marked'
-import { ref, watchEffect } from 'vue'
-import DOMPurify from 'dompurify'
 import * as constants from '../../constants'
-import IconButton from './IconButton.vue'
 import { useSearchModeStateStore } from '../composable/useStore'
 import { isValidAs, knowledgeSchema, tentativeKnowledgeSchema } from '../model'
+import IconButton from './IconButton.vue'
+import DOMPurify from 'dompurify'
+import * as marked from 'marked'
+import { ref, watchEffect } from 'vue'
 
 const searchModeState = useSearchModeStateStore()
 

@@ -1,6 +1,6 @@
 import { Failure, Ok, Result, Success } from '@shared/result'
-import zod from 'zod'
 import { DateTimeString, KnowledgeId } from '@shared/type'
+import zod from 'zod'
 
 const apiKnowledgeSchema = zod.object({
   id: zod.string().uuid().transform(KnowledgeId) as unknown as zod.ZodSchema<KnowledgeId>,

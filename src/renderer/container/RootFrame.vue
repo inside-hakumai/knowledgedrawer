@@ -6,9 +6,9 @@
 </template>
 
 <script setup lang="ts">
-import SearchBarFrame from './SearchBarFrame.vue'
-import MainContentsFrame from './MainContentsFrame.vue'
 import { useKeybindingStore } from '../composable/useStore'
+import MainContentsFrame from './MainContentsFrame.vue'
+import SearchBarFrame from './SearchBarFrame.vue'
 import { onMounted, onUnmounted } from 'vue'
 
 const { keybindings } = useKeybindingStore()

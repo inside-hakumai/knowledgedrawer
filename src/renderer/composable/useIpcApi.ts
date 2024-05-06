@@ -1,7 +1,7 @@
-import { Knowledge, knowledgeSchema } from '../model'
 import { Failure, Result, Success } from '../../shared/result'
-import zod, { ZodSchema } from 'zod'
+import { Knowledge, knowledgeSchema } from '../model'
 import { DateTimeString, KnowledgeId } from '@shared/type'
+import zod, { ZodSchema } from 'zod'
 
 const apiKnowledgeSchema = zod.object({
   id: zod.string().uuid(),

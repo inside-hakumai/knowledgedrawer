@@ -1,7 +1,7 @@
-import { Result, Failure, Success, Ok } from '@shared/result'
-import { DateTimeString, KnowledgeId } from '@shared/type'
 import { Knowledge } from '../model'
 import { createEmptyKnowledge, startKnowledgeEdit } from './IpcApiApplication'
+import { Result, Failure, Success, Ok } from '@shared/result'
+import { DateTimeString, KnowledgeId } from '@shared/type'
 
 /**
  * 指定したタイトルで新しいナレッジを作成し、そのナレッジの編集を開始します。

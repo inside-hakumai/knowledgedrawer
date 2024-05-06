@@ -1,6 +1,6 @@
-import { Knowledge } from '../model/Knowledge'
 import { Result } from '../../../shared/result'
 import { KnowledgeId } from '../../../shared/type'
+import { Knowledge } from '../model/Knowledge'
 
 export interface KnowledgeRepository {
   getAll(): Promise<Result<Knowledge[], string>>

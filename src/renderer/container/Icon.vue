@@ -33,9 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
-
 import * as constants from '../../constants'
+import { defineProps } from 'vue'
 
 export type IconType = 'search' | 'description' | 'moreHorizontal' | 'add' | 'settings'
 

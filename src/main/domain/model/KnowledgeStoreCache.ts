@@ -1,5 +1,5 @@
-import { Knowledge } from './Knowledge'
 import { Failure, Result, Success } from '../../../shared/result'
+import { Knowledge } from './Knowledge'
 
 export class KnowledgeStoreCache {
   private static instance: KnowledgeStoreCache

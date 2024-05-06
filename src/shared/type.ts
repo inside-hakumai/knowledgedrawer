@@ -1,5 +1,5 @@
-import { validate as uuidValidate } from 'uuid'
 import dayjs from 'dayjs'
+import { validate as uuidValidate } from 'uuid'
 
 export declare class Id<T extends string> {
   private __identity: T

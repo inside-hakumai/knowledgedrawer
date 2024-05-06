@@ -1,5 +1,5 @@
-import { ElectronApiRepository as IElectronApiRepository } from '../../domain/repository/ElectronApiRepository'
 import { Failure, Ok, Result } from '../../../shared/result'
+import { ElectronApiRepository as IElectronApiRepository } from '../../domain/repository/ElectronApiRepository'
 import { shell } from 'electron'
 
 export class ElectronApiRepository implements IElectronApiRepository {

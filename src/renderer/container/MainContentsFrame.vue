@@ -11,8 +11,8 @@
 </template>
 
 <script setup lang="ts">
-import KnowledgeList from './KnowledgeList.vue'
 import Detail from './Detail.vue'
+import KnowledgeList from './KnowledgeList.vue'
 </script>
 
 <style lang="scss" scoped>

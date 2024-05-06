@@ -37,11 +37,11 @@
 </template>
 
 <script setup lang="ts">
-import Icon from './Icon.vue'
-import IconButton from './IconButton.vue'
 import * as constants from '../../constants'
 import { useIpcApi } from '../composable/useIpcApi'
 import { useSearchModeStateStore } from '../composable/useStore'
+import Icon from './Icon.vue'
+import IconButton from './IconButton.vue'
 import { onMounted, ref } from 'vue'
 
 const { search } = useIpcApi()

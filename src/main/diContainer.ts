@@ -1,12 +1,12 @@
-import { container } from 'tsyringe'
-import { KnowledgeLocalFileBasedRepository } from './infrastructure/repository/KnowledgeLocalFileBasedRepository'
-import { KnowledgeRepository } from './domain/repository/KnowledgeRepository'
 import { KnowledgeApplication, KnowledgeApplicationImpl } from './application/KnowledgeApplication'
-import { IpcHandler, IpcHandlerImpl } from './ipcHandler'
 import { ElectronApiRepository as IElectronApiRepository } from './domain/repository/ElectronApiRepository'
+import { KnowledgeRepository } from './domain/repository/KnowledgeRepository'
 import { ElectronApiRepository } from './infrastructure/repository/ElectronApiRepository'
-import { getExecMode } from './lib/environment'
+import { KnowledgeLocalFileBasedRepository } from './infrastructure/repository/KnowledgeLocalFileBasedRepository'
 import { KnowledgeUserDataBasedRepository } from './infrastructure/repository/KnowledgeUserDataBasedRepository'
+import { IpcHandler, IpcHandlerImpl } from './ipcHandler'
+import { getExecMode } from './lib/environment'
+import { container } from 'tsyringe'
 
 export const initContainer = () => {
   container.register<IpcHandler>('IpcHandler', {

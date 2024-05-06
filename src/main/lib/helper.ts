@@ -1,6 +1,6 @@
-import fs from 'fs/promises'
 import { Failure, Ok, Result } from '../../shared/result'
 import log from 'electron-log'
+import fs from 'fs/promises'
 
 const logger = log.scope('lib/helper')
 
