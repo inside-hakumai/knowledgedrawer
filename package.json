@@ -2,7 +2,7 @@
   "name": "knowledgedrawer",
   "version": "0.1.0",
   "description": "",
-  "main": "./build/main.js",
+  "main": "./out/main.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/inside-hakumai/knowledgedrawer.git"
@@ -21,7 +21,10 @@
     "prebuild:prod": "rimraf out",
     "build:dev": "cross-env NODE_ENV=\"development\" concurrently --names \"main,preload,renderer\" \"npm run component-build:main\" \"npm run component-build:preload\" \"npm run component-build:renderer\"",
     "start:dev": "cross-env NODE_ENV=\"development\" electron ./out/main.js",
-    "build:prod": "cross-env NODE_ENV=\"production\" concurrently --names \"main,preload,renderer\" \"npm run component-build:main\" \"npm run component-build:preload\" \"npm run component-build:renderer\""
+    "build:prod": "cross-env NODE_ENV=\"production\" concurrently --names \"main,preload,renderer\" \"npm run component-build:main\" \"npm run component-build:preload\" \"npm run component-build:renderer\"",
+    "prepackage": "rimraf out && npm run build:prod",
+    "package": "run-s package:*",
+    "package:mac": "electron-builder --macos"
   },
   "author": "inside-hakumai",
   "license": "MIT",
@@ -34,12 +37,14 @@
     "dayjs": "^1.11.11",
     "dompurify": "^3.1.2",
     "electron": "^29.3.0",
+    "electron-builder": "^24.13.3",
     "electron-log": "^5.1.2",
     "esbuild": "^0.20.2",
     "fuse.js": "^7.0.0",
     "lint-staged": "^15.2.2",
     "marked": "^12.0.2",
     "nodemon": "^3.1.0",
+    "npm-run-all": "^4.1.5",
     "pinia": "^2.1.7",
     "prettier": "^3.2.5",
     "reflect-metadata": "^0.2.2",
@@ -67,16 +72,12 @@
   "build": {
     "appId": "dev.insidehakumai.knowledgedrawer",
     "artifactName": "knowledgedrawer.${ext}",
-    "afterSign": "misc/notarize.js",
     "productName": "KnowledgeDrawer",
     "files": [
-      "build/**/*"
+      "out/**/*"
     ],
     "mac": {
-      "hardenedRuntime": true,
       "gatekeeperAssess": false,
-      "entitlements": "misc/entitlements.mac.plist",
-      "entitlementsInherit": "misc/entitlements.mac.plist",
       "icon": "assets/icon.png",
       "publish": [
         "github"

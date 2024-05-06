@@ -7,7 +7,7 @@ export const getExecMode = (): ExecMode => {
     return 'development-devserver'
   } else if (process.env.NODE_ENV === 'development') {
     return 'development-unpackaged'
-  } else if (process.env.NODE_ENV === 'production' && app.isPackaged) {
+  } else if (app.isPackaged) {
     return 'production'
   } else {
     throw new Error(`Failed to identify the execution mode. NODE_ENV: ${process.env.NODE_ENV}`)

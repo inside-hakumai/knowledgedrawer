@@ -30,4 +30,10 @@ export const initContainer = () => {
       useClass: KnowledgeUserDataBasedRepository,
     })
   }
+
+  if (getExecMode() === 'production') {
+    container.register<KnowledgeRepository>('KnowledgeRepository', {
+      useClass: KnowledgeUserDataBasedRepository,
+    })
+  }
 }

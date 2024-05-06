@@ -19,7 +19,7 @@ const logger = log.scope('index')
 switch (getExecMode()) {
   case 'development-devserver':
   case 'development-unpackaged':
-    app.setName('KnowledgeDrawer-development')
+    app.setName('knowledgedrawer-development')
 
     const userDataDirPath = path.join(app.getPath('appData'), 'KnowledgeDrawer-development')
     app.setPath('userData', userDataDirPath)
@@ -29,11 +29,10 @@ switch (getExecMode()) {
 }
 
 logger.log(`Log file path: ${log.transports.file.getFile().path}`)
-
 logger.log(`Exec mode: ${getExecMode()}`)
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
   app.quit()
 })
 
@@ -42,7 +41,7 @@ try {
   initContainer()
   ipcHandler = container.resolve<IpcHandler>('IpcHandler')
 } catch (e) {
-  console.error(`Failed to initialize container: ${e}`)
+  logger.error(`Failed to initialize container: ${e}`)
   app.quit()
 }
 
@@ -74,13 +73,19 @@ const createWindow = async () => {
     mainWindow = null
   })
 
-  if (getExecMode() === 'development-devserver') {
-    await mainWindow.loadURL('http://localhost:51645')
-    mainWindow.webContents.openDevTools({
-      mode: 'detach',
-    })
-  } else {
-    await mainWindow.loadFile('renderer/index.html')
+  switch (getExecMode()) {
+    case 'development-devserver':
+      await mainWindow.loadURL('http://localhost:51645')
+      mainWindow.webContents.openDevTools({
+        mode: 'detach',
+      })
+      break
+    case 'development-unpackaged':
+      await mainWindow.loadFile('renderer/index.html')
+      break
+    case 'production':
+      await mainWindow.loadFile('out/renderer/index.html')
+      break
   }
 }
 
