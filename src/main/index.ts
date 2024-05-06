@@ -6,18 +6,36 @@ import { container } from 'tsyringe'
 import { IpcHandler } from './ipcHandler'
 import { getExecMode } from './lib/environment'
 import { initContainer } from './diContainer'
+import log from 'electron-log'
 
-console.log(`Exec mode: ${getExecMode()}`)
+log.transports.console.format =
+  '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}][{processType}]{scope} {text}'
+log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}][{processType}]{scope} {text}'
+
+log.initialize()
+
+const logger = log.scope('index')
+
+switch (getExecMode()) {
+  case 'development-devserver':
+  case 'development-unpackaged':
+    app.setName('KnowledgeDrawer-development')
+
+    const userDataDirPath = path.join(app.getPath('appData'), 'KnowledgeDrawer-development')
+    app.setPath('userData', userDataDirPath)
+    break
+  case 'production':
+    break
+}
+
+logger.log(`Log file path: ${log.transports.file.getFile().path}`)
+
+logger.log(`Exec mode: ${getExecMode()}`)
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason)
   app.quit()
 })
-
-if (getExecMode() === 'development-devserver' || getExecMode() === 'development-unpackaged') {
-  app.setName('KnowledgeDrawer-development')
-  app.setPath('userData', path.join(app.getPath('appData'), 'KnowledgeDrawer-development'))
-}
 
 let ipcHandler: IpcHandler
 try {
