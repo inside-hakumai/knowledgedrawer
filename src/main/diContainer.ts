@@ -5,16 +5,29 @@ import { KnowledgeApplication, KnowledgeApplicationImpl } from './application/Kn
 import { IpcHandler, IpcHandlerImpl } from './ipcHandler'
 import { ElectronApiRepository as IElectronApiRepository } from './domain/repository/ElectronApiRepository'
 import { ElectronApiRepository } from './infrastructure/repository/ElectronApiRepository'
+import { getExecMode } from './lib/environment'
+import { KnowledgeUserDataBasedRepository } from './infrastructure/repository/KnowledgeUserDataBasedRepository'
 
-container.register<IpcHandler>('IpcHandler', {
-  useClass: IpcHandlerImpl,
-})
-container.register<KnowledgeApplication>('KnowledgeApplication', {
-  useClass: KnowledgeApplicationImpl,
-})
-container.register<KnowledgeRepository>('KnowledgeRepository', {
-  useClass: KnowledgeLocalFileBasedRepository,
-})
-container.register<IElectronApiRepository>('ElectronApiRepository', {
-  useClass: ElectronApiRepository,
-})
+export const initContainer = () => {
+  container.register<IpcHandler>('IpcHandler', {
+    useClass: IpcHandlerImpl,
+  })
+  container.register<KnowledgeApplication>('KnowledgeApplication', {
+    useClass: KnowledgeApplicationImpl,
+  })
+  container.register<IElectronApiRepository>('ElectronApiRepository', {
+    useClass: ElectronApiRepository,
+  })
+
+  if (getExecMode() === 'development-devserver') {
+    container.register<KnowledgeRepository>('KnowledgeRepository', {
+      useClass: KnowledgeLocalFileBasedRepository,
+    })
+  }
+
+  if (getExecMode() === 'development-unpackaged') {
+    container.register<KnowledgeRepository>('KnowledgeRepository', {
+      useClass: KnowledgeUserDataBasedRepository,
+    })
+  }
+}

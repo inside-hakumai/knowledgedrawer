@@ -1,14 +1,32 @@
 import 'reflect-metadata'
-import './diContainer'
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import { color } from '../constants'
 import { container } from 'tsyringe'
-import { KnowledgeApplication } from './application/KnowledgeApplication'
 import { IpcHandler } from './ipcHandler'
 import { getExecMode } from './lib/environment'
+import { initContainer } from './diContainer'
 
-const ipcHandler = container.resolve<IpcHandler>('IpcHandler')
+console.log(`Exec mode: ${getExecMode()}`)
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+  app.quit()
+})
+
+if (getExecMode() === 'development-devserver' || getExecMode() === 'development-unpackaged') {
+  app.setName('KnowledgeDrawer-development')
+  app.setPath('userData', path.join(app.getPath('appData'), 'KnowledgeDrawer-development'))
+}
+
+let ipcHandler: IpcHandler
+try {
+  initContainer()
+  ipcHandler = container.resolve<IpcHandler>('IpcHandler')
+} catch (e) {
+  console.error(`Failed to initialize container: ${e}`)
+  app.quit()
+}
 
 const getPreloadScriptPath = () => {
   // ビルド後のメインプロセスのファイルがout/main.jsであり、同階層にpreload.jsがあるという想定
@@ -38,7 +56,7 @@ const createWindow = async () => {
     mainWindow = null
   })
 
-  if (process.env.NODE_ENV === 'development') {
+  if (getExecMode() === 'development-devserver') {
     await mainWindow.loadURL('http://localhost:51645')
     mainWindow.webContents.openDevTools({
       mode: 'detach',

@@ -9,13 +9,19 @@
   },
   "scripts": {
     "predev": "rimraf dev-out",
-    "dev": "cross-env NODE_ENV=\"development\" concurrently --names \"renderer,preload-transpile,main-transpile,main-run\" \"npm run dev:renderer\" \"npm run dev:preload-transpile\" \"npm run dev:main-transpile\" \"npm run dev:main-run\"",
+    "dev": "cross-env NODE_ENV=\"development\" RUNNING_ON_DEVSERVER=\"true\" concurrently --names \"renderer,preload-transpile,main-transpile,main-run\" \"npm run dev:renderer\" \"npm run dev:preload-transpile\" \"npm run dev:main-transpile\" \"npm run dev:main-run\"",
     "dev:renderer": "cross-env NODE_ENV=\"development\" vite --mode development --config vite.config.ts --port 51645",
     "dev:preload-transpile": "cross-env NODE_ENV=\"development\" nodemon --watch --watch-preserve-output --watch-path=./src/preload/ ./transpile-preload.js",
     "dev:main-transpile": "cross-env NODE_ENV=\"development\" node --watch --watch-preserve-output --watch-path=./src/main/ ./transpile-main.js",
     "dev:main-run": "cross-env NODE_ENV=\"development\" wait-on ./dev-out/main.js ./dev-out/preload.js http://localhost:51645 && node --watch --watch-preserve-output --watch-path=./dev-out/main.js ./node_modules/.bin/electron ./dev-out/main.js",
-    "build:main": "esbuild ./src/main/index.ts --bundle --platform=node --outfile=out/main.js --external:electron",
-    "build:preload": "esbuild ./src/preload/index.js --bundle --platform=node --outfile=out/preload.js --external:electron"
+    "component-build:main": "esbuild ./src/main/index.ts --bundle --minify --platform=node --outfile=out/main.js --external:electron",
+    "component-build:preload": "esbuild ./src/preload/index.js --bundle --minify --platform=node --outfile=out/preload.js --external:electron",
+    "component-build:renderer": "vite build --mode production --config vite.config.ts --outDir ../../out/renderer",
+    "prebuild:dev": "rimraf out",
+    "prebuild:prod": "rimraf out",
+    "build:dev": "cross-env NODE_ENV=\"development\" concurrently --names \"main,preload,renderer\" \"npm run component-build:main\" \"npm run component-build:preload\" \"npm run component-build:renderer\"",
+    "start:dev": "cross-env NODE_ENV=\"development\" electron ./out/main.js",
+    "build:prod": "cross-env NODE_ENV=\"production\" concurrently --names \"main,preload,renderer\" \"npm run component-build:main\" \"npm run component-build:preload\" \"npm run component-build:renderer\""
   },
   "author": "inside-hakumai",
   "license": "MIT",

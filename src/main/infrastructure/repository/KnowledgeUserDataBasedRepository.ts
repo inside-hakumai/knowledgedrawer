@@ -1,6 +1,5 @@
 import { KnowledgeRepository } from '../../domain/repository/KnowledgeRepository'
 import { Knowledge, knowledgeMetadataSchema } from '../../domain/model/Knowledge'
-import { getExecMode } from '../../lib/environment'
 import path from 'path'
 import fs from 'fs/promises'
 import { watch } from 'fs'
@@ -9,32 +8,39 @@ import zod from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 import dayjs from 'dayjs'
 import { DateTimeString, KnowledgeId } from '../../../shared/type'
+import { app as electronApp } from 'electron'
+import { ensureDirectoryExists, ensureFileExists } from '../../lib/helper'
 
-/**
- * リポジトリのディレクトリルート直下の「dev-knowledge」ディレクトリからナレッジを取得するリポジトリです。
- * 開発環境かつ開発サーバー上で実行されている状態でのみ使用できます。
- */
-export class KnowledgeLocalFileBasedRepository implements KnowledgeRepository {
+export class KnowledgeUserDataBasedRepository implements KnowledgeRepository {
   knowledgeFileChangedListeners: ((knowledgeId: KnowledgeId) => void)[] = []
 
   constructor() {
-    if (getExecMode() !== 'development-devserver') {
-      throw new Error(
-        'KnowledgeLocalFileBasedRepository can only be used in development-devserver mode',
-      )
-    }
-
-    const knowledgeDirPathResult = identifyKnowledgeDirPath().then((result) => {
-      if (!result.isSuccess) {
-        console.error(`Failed to identify knowledge directory path: ${result.data}`)
+    ;(async () => {
+      const knowledgeDirPathResult = identifyKnowledgeDirPath()
+      if (!knowledgeDirPathResult.isSuccess) {
+        throw new Error(
+          `Failed to identify knowledge directory path: ${knowledgeDirPathResult.data}`,
+        )
       } else {
-        console.log(`Knowledge directory path: ${result.data}`)
+        console.log(`Knowledge directory path: ${knowledgeDirPathResult.data}`)
       }
-    })
 
-    this.watchKnowledges().catch((e) => {
-      console.error(`Failed to watch knowledges: ${e}`)
-    })
+      await ensureDirectoryExists(knowledgeDirPathResult.data).catch((e) => {
+        throw new Error(`Failed to ensure knowledge directory: ${e}`)
+      })
+
+      await ensureFileExists(path.join(knowledgeDirPathResult.data, 'metadata.json'), '[]').catch(
+        (e) => {
+          throw new Error(`Failed to ensure metadata.json: ${e}`)
+        },
+      )
+
+      await this.watchKnowledges().catch((e) => {
+        throw new Error(
+          `Failed to start watching knowledge in KnowledgeUserDataBasedRepository constructor: ${e}`,
+        )
+      })
+    })()
   }
 
   async getAll(): Promise<Result<Knowledge[], string>> {
@@ -163,7 +169,7 @@ export class KnowledgeLocalFileBasedRepository implements KnowledgeRepository {
     const identifyKnowledgeDirPathResult = await identifyKnowledgeDirPath()
     if (!identifyKnowledgeDirPathResult.isSuccess) {
       return Failure(
-        `Failed to identify the dev-knowledge directory path: ${identifyKnowledgeDirPathResult.data}`,
+        `Failed to identify knowledge directory path: ${identifyKnowledgeDirPathResult.data}`,
       )
     }
     const knowledgeDirPath = identifyKnowledgeDirPathResult.data
@@ -202,35 +208,15 @@ export class KnowledgeLocalFileBasedRepository implements KnowledgeRepository {
 }
 
 /**
- * 「dev-knowledge」ディレクトリの絶対パスを特定します。
- * package.jsonと同じディレクトリに「dev-knowledge」ディレクトリが存在することを前提としています。
+ * ユーザーのデータディレクトリのパスを返します。
+ *
+ * @returns パス取得に成功した場合、そのパスを含むSuccessオブジェクト。失敗した場合はエラーメッセージを含むFailureオブジェクト
  */
-const identifyKnowledgeDirPath = async (): Promise<Result<string, string>> => {
-  // 現在のファイルから親ディレクトリをたどり、package.jsonが存在するディレクトリを特定する
-  let currentDir = __dirname
-  while (true) {
-    // ディレクトリ自体が存在しなかったりアクセス権限がなかったり、ディレクトリではない場合はfalseを返す
-    try {
-      if (!(await fs.lstat(currentDir)).isDirectory()) {
-        return Failure('Failed to identify the dev-knowledge directory path')
-      }
-    } catch (e) {
-      return Failure('Failed to identify the dev-knowledge directory path')
-    }
-
-    const packageJsonPath = path.join(currentDir, 'package.json')
-    try {
-      if ((await fs.lstat(packageJsonPath)).isFile()) {
-        break
-      }
-    } catch (e) {
-      // do nothing
-    }
-
-    currentDir = path.join(currentDir, '..')
+const identifyKnowledgeDirPath = (): Result<string, string> => {
+  try {
+    const userDataDirPath = electronApp.getPath('userData')
+    return Success(path.resolve(userDataDirPath, 'knowledgeData'))
+  } catch (e) {
+    return Failure(`Failed to get knowledge directory path: ${e}`)
   }
-
-  const knowledgeDirPath = path.join(currentDir, 'dev-knowledge')
-
-  return Success(knowledgeDirPath)
 }

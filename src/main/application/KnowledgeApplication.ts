@@ -22,9 +22,17 @@ export class KnowledgeApplicationImpl implements KnowledgeApplication {
     @inject('KnowledgeRepository') private knowledgeRepository: KnowledgeRepository,
     @inject('ElectronApiRepository') private electronApiRepository: ElectronApiRepository,
   ) {
-    this.knowledgeRepository.addKnowledgeChangedListener(async (knowledgeId) => {
-      await this.reloadCache()
-    })
+    try {
+      ;(async () => {
+        await this.reloadCache()
+
+        this.knowledgeRepository.addKnowledgeChangedListener(async (knowledgeId) => {
+          await this.reloadCache()
+        })
+      })()
+    } catch (e) {
+      throw new Error(`Failed to initialize KnowledgeApplicationImpl: ${e}`)
+    }
   }
 
   public async loadKnowledges() {
