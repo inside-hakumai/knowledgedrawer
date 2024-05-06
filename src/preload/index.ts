@@ -1,5 +1,5 @@
-import { KnowledgeId } from '../shared/type'
 import { contextBridge, ipcRenderer } from 'electron'
+import { KnowledgeId } from '@shared/type'
 
 contextBridge.exposeInMainWorld('api', {
   search: async (query: string) => ipcRenderer.invoke('search', query),

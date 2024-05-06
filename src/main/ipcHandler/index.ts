@@ -1,9 +1,9 @@
-import { Knowledge } from '../domain/model/Knowledge'
-import { Result } from '../../shared/result'
-import { KnowledgeApplication } from '../application/KnowledgeApplication'
+import { IpcMainInvokeEvent } from 'electron'
 import { inject, injectable } from 'tsyringe'
-import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent
-import { KnowledgeId } from '../../shared/type'
+import { KnowledgeApplication } from '@/application/KnowledgeApplication'
+import { Knowledge } from '@/domain/model/Knowledge'
+import { Result } from '@shared/result'
+import { KnowledgeId } from '@shared/type'
 
 export interface IpcHandler {
   handleSearch: (

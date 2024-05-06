@@ -1,7 +1,7 @@
-import { isValidAs, Knowledge, TentativeKnowledge, tentativeKnowledgeSchema } from '../model'
-import { DateTimeString, KnowledgeId, TENTATIVE_KNOWLEDGE_ID } from '@shared/type'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import { isValidAs, Knowledge, TentativeKnowledge, tentativeKnowledgeSchema } from '@/model'
+import { DateTimeString, KnowledgeId, TENTATIVE_KNOWLEDGE_ID } from '@shared/type'
 
 export const useSearchModeStateStore = defineStore('searchModeState', () => {
   const knowledgeList = ref<(Knowledge | TentativeKnowledge)[] | null>(null)

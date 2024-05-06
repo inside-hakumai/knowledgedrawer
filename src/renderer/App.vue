@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import RootFrame from './container/RootFrame.vue'
+import RootFrame from '@/container/RootFrame.vue'
 </script>
 
 <style lang="scss">

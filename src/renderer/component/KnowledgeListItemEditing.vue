@@ -11,10 +11,9 @@
 </template>
 
 <script setup lang="ts">
-import Icon from '../container/Icon.vue'
-import { Knowledge } from '../model'
-import { KnowledgeId } from '@shared/type'
 import { onMounted, ref } from 'vue'
+import Icon from '@/container/Icon.vue'
+import { KnowledgeId } from '@shared/type'
 
 const inputRef = ref<HTMLInputElement | null>(null)
 

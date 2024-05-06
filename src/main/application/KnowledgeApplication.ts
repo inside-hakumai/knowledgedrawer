@@ -1,12 +1,12 @@
-import { Knowledge } from '../domain/model/Knowledge'
-import { Failure, Ok, Result, Success } from '../../shared/result'
-import { KnowledgeRepository } from '../domain/repository/KnowledgeRepository'
-import { inject, injectable } from 'tsyringe'
-import Fuse from 'fuse.js'
-import { KnowledgeStoreCache } from '../domain/model/KnowledgeStoreCache'
-import { KnowledgeId } from '../../shared/type'
-import { ElectronApiRepository } from '../domain/repository/ElectronApiRepository'
 import log from 'electron-log'
+import Fuse from 'fuse.js'
+import { inject, injectable } from 'tsyringe'
+import { Knowledge } from '@/domain/model/Knowledge'
+import { KnowledgeStoreCache } from '@/domain/model/KnowledgeStoreCache'
+import { ElectronApiRepository } from '@/domain/repository/ElectronApiRepository'
+import { KnowledgeRepository } from '@/domain/repository/KnowledgeRepository'
+import { Failure, Ok, Result, Success } from '@shared/result'
+import { KnowledgeId } from '@shared/type'
 
 const logger = log.scope('KnowledgeApplication')
 

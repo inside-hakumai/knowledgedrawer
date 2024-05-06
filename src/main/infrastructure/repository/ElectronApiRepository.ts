@@ -1,6 +1,6 @@
-import { Failure, Ok, Result } from '../../../shared/result'
-import { ElectronApiRepository as IElectronApiRepository } from '../../domain/repository/ElectronApiRepository'
 import { shell } from 'electron'
+import { ElectronApiRepository as IElectronApiRepository } from '@/domain/repository/ElectronApiRepository'
+import { Failure, Ok, Result } from '@shared/result'
 
 export class ElectronApiRepository implements IElectronApiRepository {
   public async openFile(filePath: string): Promise<Result<void, string>> {

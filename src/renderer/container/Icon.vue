@@ -33,8 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import * as constants from '../../constants'
 import { defineProps } from 'vue'
+import { color } from '@shared/constants'
 
 export type IconType = 'search' | 'description' | 'moreHorizontal' | 'add' | 'settings'
 
@@ -51,7 +51,7 @@ const props = defineProps({
   color: {
     type: String,
     required: false,
-    default: constants.color.text.sub2,
+    default: color.text.sub2,
   },
 })
 </script>

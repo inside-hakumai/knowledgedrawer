@@ -1,8 +1,3 @@
-import { Failure, Ok, Result, Success } from '../../../shared/result'
-import { DateTimeString, KnowledgeId } from '../../../shared/type'
-import { Knowledge, knowledgeMetadataSchema } from '../../domain/model/Knowledge'
-import { KnowledgeRepository } from '../../domain/repository/KnowledgeRepository'
-import { getExecMode } from '../../lib/environment'
 import dayjs from 'dayjs'
 import log from 'electron-log'
 import { watch } from 'fs'
@@ -10,6 +5,11 @@ import fs from 'fs/promises'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import zod from 'zod'
+import { Knowledge, knowledgeMetadataSchema } from '@/domain/model/Knowledge'
+import { KnowledgeRepository } from '@/domain/repository/KnowledgeRepository'
+import { getExecMode } from '@/lib/environment'
+import { Failure, Ok, Result, Success } from '@shared/result'
+import { DateTimeString, KnowledgeId } from '@shared/type'
 
 const logger = log.scope('KnowledgeLocalFileBasedRepository')
 

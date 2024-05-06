@@ -8,7 +8,7 @@
             class="Detail__actionIcon"
             type="moreHorizontal"
             :size="28"
-            :color="constants.color.text.sub1"
+            :color="color.text.sub1"
           />
         </div>
       </div>
@@ -21,13 +21,13 @@
 </template>
 
 <script setup lang="ts">
-import * as constants from '../../constants'
-import { useSearchModeStateStore } from '../composable/useStore'
-import { isValidAs, knowledgeSchema, tentativeKnowledgeSchema } from '../model'
-import IconButton from './IconButton.vue'
 import DOMPurify from 'dompurify'
 import * as marked from 'marked'
 import { ref, watchEffect } from 'vue'
+import { useSearchModeStateStore } from '@/composable/useStore'
+import IconButton from '@/container/IconButton.vue'
+import { isValidAs, knowledgeSchema, tentativeKnowledgeSchema } from '@/model'
+import { color } from '@shared/constants'
 
 const searchModeState = useSearchModeStateStore()
 

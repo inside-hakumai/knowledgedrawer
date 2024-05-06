@@ -1,12 +1,12 @@
-import { KnowledgeApplication, KnowledgeApplicationImpl } from './application/KnowledgeApplication'
-import { ElectronApiRepository as IElectronApiRepository } from './domain/repository/ElectronApiRepository'
-import { KnowledgeRepository } from './domain/repository/KnowledgeRepository'
-import { ElectronApiRepository } from './infrastructure/repository/ElectronApiRepository'
-import { KnowledgeLocalFileBasedRepository } from './infrastructure/repository/KnowledgeLocalFileBasedRepository'
-import { KnowledgeUserDataBasedRepository } from './infrastructure/repository/KnowledgeUserDataBasedRepository'
-import { IpcHandler, IpcHandlerImpl } from './ipcHandler'
-import { getExecMode } from './lib/environment'
 import { container } from 'tsyringe'
+import { KnowledgeApplication, KnowledgeApplicationImpl } from '@/application/KnowledgeApplication'
+import { ElectronApiRepository as IElectronApiRepository } from '@/domain/repository/ElectronApiRepository'
+import { KnowledgeRepository } from '@/domain/repository/KnowledgeRepository'
+import { ElectronApiRepository } from '@/infrastructure/repository/ElectronApiRepository'
+import { KnowledgeLocalFileBasedRepository } from '@/infrastructure/repository/KnowledgeLocalFileBasedRepository'
+import { KnowledgeUserDataBasedRepository } from '@/infrastructure/repository/KnowledgeUserDataBasedRepository'
+import { IpcHandler, IpcHandlerImpl } from '@/ipcHandler'
+import { getExecMode } from '@/lib/environment'
 
 export const initContainer = () => {
   container.register<IpcHandler>('IpcHandler', {

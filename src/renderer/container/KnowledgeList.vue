@@ -19,14 +19,13 @@
 </template>
 
 <script setup lang="ts">
-import { startNewKnowledgeEdit } from '../applicaiton/KnowledgeApplication'
-import KnowledgeListItem from '../component/KnowledgeListItem.vue'
-import SearchResultItemEditing from '../component/KnowledgeListItemEditing.vue'
-import { useIpcApi } from '../composable/useIpcApi'
-import { useSearchModeStateStore } from '../composable/useStore'
-import { useKeybindingStore } from '../composable/useStore'
-import { isValidAs, knowledgeSchema, tentativeKnowledgeSchema } from '../model'
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onUnmounted, watch } from 'vue'
+import { startNewKnowledgeEdit } from '@/applicaiton/KnowledgeApplication'
+import KnowledgeListItem from '@/component/KnowledgeListItem.vue'
+import SearchResultItemEditing from '@/component/KnowledgeListItemEditing.vue'
+import { useIpcApi } from '@/composable/useIpcApi'
+import { useKeybindingStore, useSearchModeStateStore } from '@/composable/useStore'
+import { isValidAs, knowledgeSchema, tentativeKnowledgeSchema } from '@/model'
 
 const searchModeState = useSearchModeStateStore()
 const { setKeybinding } = useKeybindingStore()

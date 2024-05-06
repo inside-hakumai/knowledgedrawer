@@ -1,8 +1,3 @@
-import { Failure, Ok, Result, Success } from '../../../shared/result'
-import { DateTimeString, KnowledgeId } from '../../../shared/type'
-import { Knowledge, knowledgeMetadataSchema } from '../../domain/model/Knowledge'
-import { KnowledgeRepository } from '../../domain/repository/KnowledgeRepository'
-import { ensureDirectoryExists, ensureFileExists } from '../../lib/helper'
 import dayjs from 'dayjs'
 import { app as electronApp } from 'electron'
 import log from 'electron-log'
@@ -11,6 +6,11 @@ import fs from 'fs/promises'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import zod from 'zod'
+import { Knowledge, knowledgeMetadataSchema } from '@/domain/model/Knowledge'
+import { KnowledgeRepository } from '@/domain/repository/KnowledgeRepository'
+import { ensureDirectoryExists, ensureFileExists } from '@/lib/helper'
+import { Failure, Ok, Result, Success } from '@shared/result'
+import { DateTimeString, KnowledgeId } from '@shared/type'
 
 const logger = log.scope('KnowledgeUserDataBasedRepository')
 

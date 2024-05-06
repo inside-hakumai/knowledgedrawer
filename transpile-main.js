@@ -1,5 +1,4 @@
 const esbuild = require('esbuild')
-const fs = require('fs/promises')
 
 const nativeNodeModulesPlugin = {
   name: 'native-node-modules',
@@ -39,6 +38,7 @@ const nativeNodeModulesPlugin = {
 
 esbuild.build({
   entryPoints: ['./src/main/index.ts'],
+  tsconfig: './src/main/tsconfig.json',
   bundle: true,
   platform: 'node',
   external: ['electron'],

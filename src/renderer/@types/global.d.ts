@@ -1,6 +1,6 @@
-import { Knowledge } from '../../main/domain/model/Knowledge'
 import { Result } from '@shared/result'
 import { KnowledgeId } from '@shared/type'
+import { Knowledge } from '../../main/domain/model/Knowledge'
 
 declare global {
   interface Window {

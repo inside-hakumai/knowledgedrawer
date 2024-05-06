@@ -6,10 +6,10 @@
 </template>
 
 <script setup lang="ts">
-import { useKeybindingStore } from '../composable/useStore'
-import MainContentsFrame from './MainContentsFrame.vue'
-import SearchBarFrame from './SearchBarFrame.vue'
 import { onMounted, onUnmounted } from 'vue'
+import { useKeybindingStore } from '@/composable/useStore'
+import MainContentsFrame from '@/container/MainContentsFrame.vue'
+import SearchBarFrame from '@/container/SearchBarFrame.vue'
 
 const { keybindings } = useKeybindingStore()
 

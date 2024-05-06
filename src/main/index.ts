@@ -1,12 +1,12 @@
-import { color } from '../constants'
-import { initContainer } from './diContainer'
-import { IpcHandler } from './ipcHandler'
-import { getExecMode } from './lib/environment'
+import 'reflect-metadata'
 import { app, BrowserWindow, ipcMain } from 'electron'
 import log from 'electron-log'
 import path from 'path'
-import 'reflect-metadata'
 import { container } from 'tsyringe'
+import { initContainer } from '@/diContainer'
+import { IpcHandler } from '@/ipcHandler'
+import { getExecMode } from '@/lib/environment'
+import { color } from '@shared/constants'
 
 log.transports.console.format =
   '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}][{processType}]{scope} {text}'

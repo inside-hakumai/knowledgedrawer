@@ -1,5 +1,5 @@
-import { DateTimeString, KnowledgeId } from '../../../shared/type'
 import zod, { ZodSchema } from 'zod'
+import { DateTimeString, KnowledgeId } from '@shared/type'
 
 export interface KnowledgeMetadata {
   id: KnowledgeId

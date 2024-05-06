@@ -23,26 +23,21 @@
         type="add"
         :buttonSize="28"
         :iconSize="20"
-        :color="constants.color.text.sub1"
+        :color="color.text.sub1"
         @click="searchModeState.startKnowledgeTitleEdit"
       />
-      <icon-button
-        type="settings"
-        :buttonSize="28"
-        :iconSize="20"
-        :color="constants.color.text.sub1"
-      />
+      <icon-button type="settings" :buttonSize="28" :iconSize="20" :color="color.text.sub1" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import * as constants from '../../constants'
-import { useIpcApi } from '../composable/useIpcApi'
-import { useSearchModeStateStore } from '../composable/useStore'
-import Icon from './Icon.vue'
-import IconButton from './IconButton.vue'
 import { onMounted, ref } from 'vue'
+import { useIpcApi } from '@/composable/useIpcApi'
+import { useSearchModeStateStore } from '@/composable/useStore'
+import Icon from '@/container/Icon.vue'
+import IconButton from '@/container/IconButton.vue'
+import { color } from '@shared/constants'
 
 const { search } = useIpcApi()
 const searchModeState = useSearchModeStateStore()

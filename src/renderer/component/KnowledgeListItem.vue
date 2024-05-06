@@ -10,8 +10,8 @@
 </template>
 
 <script setup lang="ts">
-import Icon from '../container/Icon.vue'
-import { Knowledge } from '../model'
+import Icon from '@/container/Icon.vue'
+import { Knowledge } from '@/model'
 import { KnowledgeId } from '@shared/type'
 
 const _props = defineProps<{

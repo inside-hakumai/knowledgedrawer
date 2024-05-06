@@ -1,5 +1,5 @@
-import { Failure, Result, Success } from '../../../shared/result'
-import { Knowledge } from './Knowledge'
+import { Knowledge } from '@/domain/model/Knowledge'
+import { Failure, Result, Success } from '@shared/result'
 
 export class KnowledgeStoreCache {
   private static instance: KnowledgeStoreCache

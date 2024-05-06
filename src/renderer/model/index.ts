@@ -1,5 +1,5 @@
-import { DateTimeString, KnowledgeId } from '@shared/type'
 import zod, { ZodSchema, ZodTypeAny } from 'zod'
+import { DateTimeString, KnowledgeId } from '@shared/type'
 
 export interface Knowledge {
   isTentative: false
